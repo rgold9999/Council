@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#08080F"/>
+<title>The Council</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#08080F;font-family:'Crimson Text',serif;color:#EDE9E3}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:1px}
+:root{
+  --bg:#08080F;--bg1:#0F0F1A;--bg2:#161622;--bg3:#1E1E2C;
+  --gold:#C9A84C;--gdim:rgba(201,168,76,0.12);--gline:rgba(201,168,76,0.25);
+  --purple:#7B5EA7;--teal:#3D9D6A;--red:#A03A3A;--blue:#4A7FBF;
+  --tx:#EDE9E3;--tx2:#A8A49E;--tx3:#5A5650;
+  --bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);
+  --ff:'Cinzel',serif;--fb:'Crimson Text',serif;--fm:'JetBrains Mono',monospace;
+  --r:4px;
+}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden;max-width:520px;margin:0 auto}
+.screen{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#tech-panel{position:fixed;top:0;right:0;bottom:0;width:min(360px,88vw);background:#0A0A14;border-left:0.5px solid var(--gline);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);z-index:1000;box-shadow:-12px 0 40px rgba(0,0,0,0.7);pointer-events:none}
+#tech-panel.open{transform:translateX(0);pointer-events:auto}
+#tech-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:transparent;z-index:999;opacity:0;pointer-events:none;transition:opacity 0.28s ease}
+#tech-overlay.open{opacity:1;pointer-events:auto}
+/* Only show dim overlay on narrow screens where panel covers the game */
+@media(max-width:560px){#tech-overlay.open{background:rgba(0,0,0,0.45)}}
+.tp-hdr{padding:52px 20px 16px;border-bottom:0.5px solid var(--bd);flex-shrink:0}
+.tp-title{font-family:var(--ff);font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.tp-sub{font-family:var(--fm);font-size:10px;color:var(--tx3);letter-spacing:1px}
+.tp-close{position:absolute;top:54px;right:16px;width:26px;height:26px;border-radius:50%;border:0.5px solid var(--bd2);color:var(--tx2);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.tp-close:hover{border-color:var(--gold);color:var(--gold)}
+.tp-body{flex:1;overflow-y:auto;padding:16px 20px}
+.tp-sec{margin-bottom:20px}
+.tp-stit{font-family:var(--ff);font-size:10px;color:var(--gold);letter-spacing:1px;padding-bottom:6px;border-bottom:0.5px solid var(--gline);margin-bottom:10px}
+.tp-item{margin-bottom:8px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);border:0.5px solid var(--bd)}
+.tp-lbl{font-family:var(--fm);font-size:9px;color:var(--gold);letter-spacing:1px;margin-bottom:4px}
+.tp-val{font-family:var(--fm);font-size:10px;color:var(--tx3);line-height:1.7;word-break:break-all}
+.tp-desc{font-size:13px;color:var(--tx2);line-height:1.55;margin-top:5px;font-style:italic}
+.tp-link{display:block;font-family:var(--fm);font-size:9px;color:var(--purple);text-decoration:none;letter-spacing:1px;margin-top:6px}
+.btn{display:block;width:100%;padding:15px 24px;font-family:var(--ff);font-size:13px;font-weight:600;letter-spacing:2px;border-radius:var(--r);border:none;cursor:pointer;transition:all 0.2s}
+.btn-gold{background:var(--gold);color:#08080F}
+.btn-ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn-dim{background:var(--bg3);color:var(--tx2);border:0.5px solid var(--bd)}
+.btn:disabled{opacity:0.3;pointer-events:none}
+.badge{font-family:var(--fm);font-size:9px;padding:2px 7px;border-radius:2px;border:0.5px solid;letter-spacing:0.5px;white-space:nowrap;display:inline-block}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:0.5px solid}
+.dvd{height:0.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.3;margin:0 24px}
+.slbl{font-family:var(--fm);font-size:9px;color:var(--tx2);letter-spacing:2px;margin-bottom:12px}
+.tech-bar{display:flex;align-items:center;gap:8px;padding:7px 20px;background:var(--bg1);border-bottom:0.5px solid var(--bd);flex-shrink:0}
+.tb-lbl{font-family:var(--fm);font-size:9px;color:var(--tx3);letter-spacing:1px;flex:1}
+.tech-pill{display:flex;background:var(--bg3);border:0.5px solid var(--bd2);border-radius:20px;overflow:hidden}
+.tech-pill button{padding:5px 14px;font-family:var(--fm);font-size:9px;letter-spacing:0.5px;background:transparent;color:var(--tx2);border:none;cursor:pointer;transition:all 0.2s}
+.tech-pill button.on{background:var(--gold);color:#08080F;font-weight:500}
+.status-bar{padding:50px 20px 14px;border-bottom:0.5px solid var(--bd);background:var(--bg1);flex-shrink:0}
+.prog-track{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:10px}
+.prog-fill{height:100%;border-radius:2px;transition:width 1.2s ease}
+.tabs{display:flex;border-bottom:0.5px solid var(--bd);background:var(--bg1);flex-shrink:0}
+.tab{flex:1;padding:12px 4px;font-family:var(--fm);font-size:10px;letter-spacing:1px;color:var(--tx2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.issue-block{padding:22px 0;border-bottom:0.5px solid var(--bd)}
+.issue-block:last-child{border-bottom:none}
+.issue-num{font-family:var(--fm);font-size:10px;color:var(--tx3);flex-shrink:0;padding-top:3px;min-width:22px}
+.issue-num.done{color:var(--teal)}
+.issue-label{font-size:18px;color:var(--tx);font-weight:600;line-height:1.3;margin-bottom:5px}
+.issue-label.done{color:var(--tx2)}
+.issue-status{font-family:var(--fm);font-size:9px;letter-spacing:0.5px}
+.opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:var(--r);margin-bottom:8px;border:0.5px solid var(--bd);background:rgba(255,255,255,0.01);cursor:pointer;transition:all 0.2s;font-size:17px}
+.opt:hover{border-color:var(--bd2)}
+.opt.sel{border-color:var(--sel-c);background:rgba(var(--sel-rgb),0.13)}
+.opt.locked{cursor:default;opacity:0.3;pointer-events:none}
+.opt-radio{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:10px}
+.locked-card{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--r);border:0.5px solid rgba(61,157,106,0.35);background:rgba(61,157,106,0.07);margin-left:22px}
+.session-hdr{padding:14px 20px 12px;border-bottom:0.5px solid var(--bd);background:#09090F;flex-shrink:0}
+.s-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.r-pills{display:flex;gap:4px;margin:8px 0}
+.r-pill{flex:1;height:4px;border-radius:2px;transition:all 0.5s}
+.cons-rule{padding:5px 9px;border-radius:3px;margin-top:8px;background:rgba(61,157,106,0.05);border:0.5px solid rgba(61,157,106,0.12);font-family:var(--fm);font-size:9px;line-height:1.6}
+.obj-pin{padding:12px 14px;border-radius:var(--r);margin-bottom:24px;background:rgba(201,168,76,0.04);border:0.5px solid var(--gline)}
+.obj-tr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid rgba(255,255,255,0.04)}
+.tx-panel{margin:8px 0 20px;padding:12px 14px;background:#09090F;border-radius:var(--r);border:0.5px solid var(--bd)}
+.toast{display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid;flex-shrink:0}
+.toast.confirm{background:rgba(61,157,106,0.08);border-color:var(--teal)}
+.toast.prompt{background:rgba(201,168,76,0.07);border-color:var(--gold)}
+.t-icon{font-size:20px;flex-shrink:0}
+.t-title{font-size:15px;font-weight:600;margin-bottom:2px}
+.t-msg{font-size:14px;color:var(--tx2);line-height:1.5}
+.alert-bar{padding:14px 20px;border-bottom:1px solid var(--gold);background:rgba(201,168,76,0.07);flex-shrink:0}
+.wx-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-radius:var(--r);margin-bottom:16px;border:0.5px solid var(--bd)}
+.wx-bbl{padding:10px 14px;border-radius:var(--r);font-size:16px;line-height:1.55;color:var(--tx)}
+.wx-sys{background:rgba(201,168,76,0.06);border:0.5px solid rgba(201,168,76,0.18);border-radius:var(--r);padding:10px 14px;text-align:center;font-family:var(--fm);font-size:10px;color:var(--gold)}
+.wx-sig{font-family:var(--fm);font-size:9px;color:var(--teal);margin-top:3px}
+.sig-panel{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;background:var(--bg1);border-top:1px solid var(--purple);padding:16px 20px 32px;transform:translateY(100%);transition:transform 0.3s ease;z-index:500;box-shadow:0 -8px 32px rgba(0,0,0,0.6)}
+.sig-panel.open{transform:translateY(0)}
+.countdown{font-family:var(--fm);font-size:11px;color:var(--gold);letter-spacing:1px;text-align:center;padding:8px;background:rgba(201,168,76,0.08);border-radius:var(--r);margin-bottom:12px}
+.countdown.urgent{color:var(--red)}
+.sc-card{padding:16px;border-radius:6px;cursor:pointer;border:1px solid var(--bd2);background:var(--bg1);transition:all 0.2s;margin-bottom:10px}
+.sc-card.custom{border-style:dashed}
+.f-field{margin-bottom:14px}
+.f-lbl{font-family:var(--fm);font-size:9px;color:var(--tx2);letter-spacing:1.5px;margin-bottom:6px;display:block}
+.f-inp{width:100%;padding:10px 14px;background:var(--bg2);border:0.5px solid var(--bd2);border-radius:var(--r);color:var(--tx);font-size:16px;font-family:var(--fb);outline:none;transition:border-color 0.2s}
+.f-inp:focus{border-color:var(--gold)}
+textarea.f-inp{resize:vertical;min-height:80px;line-height:1.55}
+.pw-wrap{position:relative;display:inline-block}
+.pw-tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);width:250px;padding:12px 14px;background:var(--bg2);border:0.5px solid var(--gline);border-radius:6px;opacity:0;pointer-events:none;transition:opacity 0.2s ease;font-family:var(--fb);font-size:13px;color:var(--tx2);line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:500;text-align:left}
+.pw-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--gline)}
+.pw-wrap:hover .pw-tip{opacity:1;pointer-events:auto}
+.pw-tit{font-family:var(--ff);font-size:10px;letter-spacing:1px;margin-bottom:5px}
+#audio-btn{position:fixed;bottom:80px;right:16px;z-index:998;width:32px;height:32px;border-radius:50%;background:var(--bg2);border:0.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s}
+#audio-btn:hover{border-color:var(--gold)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
+@keyframes glow{0%,100%{box-shadow:0 0 10px rgba(201,168,76,0.18)}50%{box-shadow:0 0 30px rgba(201,168,76,0.45)}}
+@keyframes slidein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes genProgress{0%{margin-left:-60%;width:60%}60%{margin-left:60%;width:40%}100%{margin-left:120%;width:60%}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tech-overlay"></div>
+<div id="tech-panel">
+  <div class="tp-close" id="tp-close">✕</div>
+  <div class="tp-hdr">
+    <div class="tp-title">UNDER THE HOOD</div>
+    <div class="tp-sub">WHAT AGNTCY &amp; MYCELIUM ARE DOING</div>
+  </div>
+  <div class="tp-body" id="tp-body"></div>
+</div>
+<div id="audio-btn">🔊</div>
+<script>
+// ═══════════════════ DATA ═══════════════════════════════
+const FACTIONS=[{id:'merchant',name:'Merchant Guild',sigil:'⚖',color:'#C9A84C',tagline:'Commerce is power. Every alliance has a price.',desc:'You control the supply chains, the financial networks, and the ledgers that keep the world moving. When you close your routes, everyone feels it within hours.',agentName:'LEDGER',spiffeId:'spiffe://council.agntcy/faction/merchant-guild',offers:[{id:'trade-route',plain:'Open a Trade Route',tech:'grant/trade-route',auth:false,info:'Let another faction use your trade network.'},{id:'port-access',plain:'Share Port Access',tech:'grant/port-access',auth:false,info:'Grant docking rights at your controlled harbors.'},{id:'gold',plain:'Transfer Gold',tech:'resource/gold',auth:false,info:'Move treasury funds to another faction.'},{id:'embargo',plain:'Impose a Trade Embargo ⚠',tech:'sanction/embargo',auth:true,info:"Cut off all trade. Requires your personal sign-off."},{id:'market-intel',plain:'Share Market Intelligence',tech:'intel/market-data',auth:false,info:'Reveal trade flow data to an ally.'}],vetoes:[{plain:'Block Trade Punishment',tech:'veto/trade-sanctions',info:'Block any resolution imposing trade penalties.'}],objectives:['Secure the eastern trade routes in the final treaty','Ensure no embargo without your approval','Have gold transfer rights enshrined in the accord']},{id:'military',name:'Military Order',sigil:'⚔',color:'#A03A3A',tagline:'Force shapes outcomes. Everything else is just talk.',desc:'Your forces hold the perimeter. Without your operational capacity, no agreement can be enforced.',agentName:'VANGUARD',spiffeId:'spiffe://council.agntcy/faction/military-order',offers:[{id:'safe-passage',plain:'Grant Safe Passage',tech:'grant/safe-passage',auth:false,info:'Allow free movement through your territories.'},{id:'def-alliance',plain:'Offer a Defensive Alliance ⚠',tech:'commit/defensive-alliance',auth:true,info:'Pledge military protection. Requires sign-off.'},{id:'non-agg',plain:'Non-Aggression Pact',tech:'commit/non-aggression',auth:false,info:'Commit to peaceful coexistence.'},{id:'blockade',plain:'Impose a Naval Blockade ⚠',tech:'sanction/naval-blockade',auth:true,info:'Cut off sea access. Requires sign-off.'},{id:'troops',plain:'Lend Troops',tech:'resource/troops',auth:false,info:'Provide military personnel for joint operations.'}],vetoes:[{plain:'Block Military Punishment',tech:'veto/military-sanctions',info:'Block any resolution imposing military penalties.'}],objectives:['Ensure military command stays independent','Form a defensive alliance with one faction','Keep the Spy Network out of the final coalition']},{id:'priestly',name:'Priestly Order',sigil:'✦',color:'#4A7FBF',tagline:'Legitimacy is the oldest power. Without it, nothing holds.',desc:'You hold the moral authority that makes agreements stick. Public trust and civil society flow through your institutions.',agentName:'ORACLE',spiffeId:'spiffe://council.agntcy/faction/priestly-order',offers:[{id:'blessing',plain:'Grant a Sacred Blessing',tech:'grant/blessing',auth:false,info:'Publicly endorse a faction, boosting their legitimacy.'},{id:'pilgrimage',plain:'Open Distribution Networks',tech:'grant/pilgrimage-rights',auth:false,info:'Use your networks to distribute aid to communities.'},{id:'moral-auth',plain:'Moral Authority Endorsement',tech:'commit/moral-authority',auth:false,info:'Formally back a resolution as just and righteous.'},{id:'sentiment',plain:'Share Public Mood Report',tech:'intel/public-sentiment',auth:false,info:'Reveal what the people think about current factions.'},{id:'influence',plain:'Transfer Influence',tech:'resource/influence',auth:false,info:'Shift popular support toward another faction.'}],vetoes:[{plain:'Block Sacred Site Decisions',tech:'veto/religious-resolutions',info:'Block any resolution affecting sacred sites or rites.'}],objectives:['Have faith enshrined as advisory in the new accord','Block any military expansion resolution','Receive formal endorsement from two other factions']},{id:'spy',name:'Spy Network',sigil:'◈',color:'#3D9D6A',tagline:"You already know their secrets. The question is when to use them.",desc:"Your agents are everywhere. You trade in information — who owes whom, who lied, who can be turned.",agentName:'SHADOW',spiffeId:'spiffe://council.agntcy/faction/spy-network',offers:[{id:'intel-1',plain:'Share Public Intelligence',tech:'intel/tier-1',auth:false,info:'Reveal non-sensitive information to the Council.'},{id:'intel-2',plain:'Share Classified Intel ⚠',tech:'intel/tier-2',auth:true,info:'Reveal sensitive intelligence. Requires sign-off.'},{id:'dossier',plain:'Deploy a Dossier ⚠⚠',tech:'intel/blackmail',auth:true,info:'Use compromising information as leverage.'},{id:'cover-id',plain:'Provide a Cover Identity',tech:'grant/cover-identity',auth:false,info:'Help a faction operate anonymously.'},{id:'surveillance',plain:'Commit Surveillance',tech:'commit/surveillance',auth:false,info:'Monitor a faction on behalf of an ally.'}],vetoes:[],objectives:['Identify which faction has a hidden compromise','Broker a secret bilateral deal','Ensure surveillance capabilities are not restricted']},{id:'agricultural',name:'Agricultural Collective',sigil:'❋',color:'#5A8A3A',tagline:"You keep the lights on. Never let them forget that.",desc:'Every army, every hospital, every deal at this table depends on the supply chains your people operate.',agentName:'HARVEST',spiffeId:'spiffe://council.agntcy/faction/agricultural-collective',offers:[{id:'grain',plain:'Allocate Supplies',tech:'resource/grain',auth:false,info:'Commit supplies to another faction or the collective.'},{id:'reserves',plain:'Release Emergency Reserves',tech:'resource/reserve',auth:false,info:'Unlock stockpiles for crisis response.'},{id:'land',plain:'Grant Land Rights',tech:'grant/land-rights',auth:false,info:'Transfer territory to another faction.'},{id:'food-pact',plain:'Supply Security Pact',tech:'commit/supply-security',auth:false,info:'Guarantee long-term supply to signatories.'},{id:'food-embargo',plain:'Supply Embargo ⚠',tech:'sanction/supply-embargo',auth:true,info:'Withhold supplies from a faction. Extreme leverage.'}],vetoes:[{plain:'Block Land Seizures',tech:'veto/land-seizure',info:'Block any resolution seizing land or infrastructure.'}],objectives:['Become the supply guarantor in the final treaty','Secure supply agreements with two factions','Prevent any military land seizure from passing']},{id:'scholars',name:'Scholar Conclave',sigil:'⬡',color:'#7B5EA7',tagline:'The next century belongs to those who control knowledge.',desc:"You hold the archives, the universities, and the expertise that solves the hardest problems.",agentName:'AXIOM',spiffeId:'spiffe://council.agntcy/faction/scholar-conclave',offers:[{id:'tech-know',plain:'Share Technical Knowledge',tech:'intel/technical',auth:false,info:'Provide expertise and research findings.'},{id:'research',plain:'Research Treaty',tech:'grant/research-treaty',auth:false,info:'Commit to joint research with another faction.'},{id:'know-share',plain:'Knowledge Sharing Accord',tech:'commit/knowledge-sharing',auth:false,info:'Open your archives to allied factions.'},{id:'archives',plain:'Grant Archive Access',tech:'grant/archive-access',auth:false,info:'Allow a faction to use your records.'},{id:'experts',plain:'Deploy Expert Advisors',tech:'resource/advisors',auth:false,info:'Send specialist advisors to another faction.'}],vetoes:[{plain:'Block Censorship',tech:'veto/censorship',info:'Block any resolution restricting the flow of information.'}],objectives:['Establish a joint research accord in the final treaty','Gain archive access from the Military Order','Have knowledge sharing enshrined as a Council right']}];
+
+const SCENARIO_OFFERS={
+  plague:{
+    merchant:[{id:'trade-route',plain:'Open a Trade Route',tech:'grant/trade-route',auth:false,info:'Open your trade network for supply movement.'},{id:'gold',plain:'Transfer Gold',tech:'resource/gold',auth:false,info:'Move treasury funds to fund another faction.'},{id:'market-intel',plain:'Share Supply Chain Intelligence',tech:'intel/market-data',auth:false,info:'Reveal where medical supplies are moving and at what price.'},{id:'embargo',plain:'Impose a Trade Embargo ⚠',tech:'sanction/embargo',auth:true,info:"Cut off all trade. Requires your personal sign-off."},{id:'port-access',plain:'Open Emergency Port Access',tech:'grant/port-access',auth:false,info:'Allow emergency supply ships to bypass normal port controls.'}],
+    military:[{id:'safe-passage',plain:'Grant Safe Passage',tech:'grant/safe-passage',auth:false,info:'Allow free movement through your controlled territories.'},{id:'troops',plain:'Deploy Field Units',tech:'resource/troops',auth:false,info:'Provide soldiers for quarantine enforcement or supply protection.'},{id:'def-alliance',plain:'Offer a Defensive Alliance ⚠',tech:'commit/defensive-alliance',auth:true,info:'Formally pledge military protection. Requires sign-off.'},{id:'blockade',plain:'Impose a Blockade ⚠',tech:'sanction/blockade',auth:true,info:'Seal a region by force. Requires your sign-off.'},{id:'non-agg',plain:'Non-Aggression Pact',tech:'commit/non-aggression',auth:false,info:'Commit to peaceful coexistence during the crisis.'}],
+    priestly:[{id:'blessing',plain:'Issue a Public Blessing',tech:'grant/blessing',auth:false,info:"Publicly endorse a faction\'s response plan, boosting compliance."},{id:'moral-auth',plain:'Moral Authority Endorsement',tech:'commit/moral-authority',auth:false,info:'Formally declare a resolution just and righteous.'},{id:'sentiment',plain:'Share Public Mood Report',tech:'intel/public-sentiment',auth:false,info:'Reveal how the population is reacting to current measures.'},{id:'pilgrimage',plain:'Open Church Distribution Networks',tech:'grant/pilgrimage-rights',auth:false,info:'Use sacred site networks to distribute aid to remote communities.'},{id:'influence',plain:'Transfer Public Influence',tech:'resource/influence',auth:false,info:"Shift popular trust toward another faction\'s approach."}],
+    spy:[{id:'intel-1',plain:'Share Outbreak Intelligence',tech:'intel/tier-1',auth:false,info:'Reveal non-sensitive outbreak data to the Council.'},{id:'intel-2',plain:'Share Classified Intel ⚠',tech:'intel/tier-2',auth:true,info:'Share sensitive infection maps and hidden spread data. Requires sign-off.'},{id:'dossier',plain:'Deploy a Dossier ⚠⚠',tech:'intel/blackmail',auth:true,info:'Use compromising information on a faction as leverage.'},{id:'cover-id',plain:'Provide a Cover Network',tech:'grant/cover-identity',auth:false,info:'Help a faction operate covertly during the crisis.'},{id:'surveillance',plain:'Commit Surveillance Resources',tech:'commit/surveillance',auth:false,info:"Monitor another faction\'s actual compliance levels."}],
+    agricultural:[{id:'grain',plain:'Allocate Food Supplies',tech:'resource/grain',auth:false,info:'Commit food to another faction or quarantine zones.'},{id:'reserves',plain:'Release Emergency Reserves',tech:'resource/grain-reserve',auth:false,info:'Unlock stockpiled food for immediate crisis deployment.'},{id:'land',plain:'Open Agricultural Land',tech:'grant/land-rights',auth:false,info:'Make farming land available for temporary medical camps.'},{id:'food-pact',plain:'Food Security Guarantee',tech:'commit/food-security',auth:false,info:'Guarantee continued food supply to signatories regardless of quarantine.'},{id:'food-embargo',plain:'Food Embargo ⚠',tech:'sanction/harvest-embargo',auth:true,info:'Withhold food from a non-compliant faction. Extreme leverage.'}],
+    scholars:[{id:'research',plain:'Share Research Findings',tech:'intel/technical',auth:false,info:'Provide medical expertise and research data to the Council.'},{id:'research-treaty',plain:'Joint Research Treaty',tech:'grant/research-treaty',auth:false,info:'Commit to pooling cure research with another faction.'},{id:'know-share',plain:'Open the Archives',tech:'commit/knowledge-sharing',auth:false,info:'Share all historical plague records and treatment knowledge.'},{id:'experts',plain:'Deploy Medical Experts',tech:'resource/expert-advisors',auth:false,info:'Send specialist physicians to another faction\'s territory.'},{id:'archives',plain:'Grant Archive Access',tech:'grant/archive-access',auth:false,info:'Allow a faction to access your full medical knowledge base.'}],
+  },
+  boardroom:{
+    merchant:[{id:'capital',plain:'Commit Investment Capital',tech:'resource/capital-commitment',auth:false,info:'Pledge investment funds contingent on a favorable governance outcome.'},{id:'block-vote',plain:'Deliver Bloc Vote',tech:'grant/bloc-vote',auth:false,info:"Commit your voting bloc to support another faction\'s position."},{id:'short-sell',plain:'Trigger a Short Position ⚠',tech:'sanction/short-position',auth:true,info:"Signal market intent to destabilize a rival\'s financial standing."},{id:'market-intel',plain:'Share Market Intelligence',tech:'intel/market-data',auth:false,info:'Reveal what institutional investors are planning to do next.'},{id:'acquisition',plain:'Propose Strategic Acquisition',tech:'commit/acquisition-intent',auth:false,info:'Signal willingness to bring in a strategic partner or buyer.'}],
+    military:[{id:'contract-hold',plain:'Hold Contract Renewal',tech:'sanction/contract-hold',auth:false,info:'Delay renewing government contracts until governance is resolved.'},{id:'endorsement',plain:'Public Executive Endorsement',tech:'grant/endorsement',auth:false,info:'Publicly back a leadership candidate, lending credibility.'},{id:'security-brief',plain:'Share Security Assessment',tech:'intel/security-brief',auth:false,info:'Reveal classified threat assessments about the technology.'},{id:'lobby',plain:'Deploy Government Lobbying ⚠',tech:'commit/lobbying-effort',auth:true,info:"Bring regulatory pressure to bear on the board\'s decisions."},{id:'ip-lock',plain:'Assert IP Control ⚠',tech:'sanction/ip-assertion',auth:true,info:'Claim ownership over key technology components. Extreme leverage.'}],
+    priestly:[{id:'endorsement',plain:'Public Moral Endorsement',tech:'grant/moral-endorsement',auth:false,info:'Issue a public statement backing a governance position.'},{id:'walkout-threat',plain:'Threaten Public Walkout ⚠',tech:'sanction/walkout-threat',auth:true,info:'Signal that a public ethics protest is imminent. Requires sign-off.'},{id:'framework',plain:'Propose Ethics Framework',tech:'commit/ethics-framework',auth:false,info:'Put forward binding governance principles for all parties to adopt.'},{id:'media-brief',plain:'Media Briefing',tech:'intel/media-brief',auth:false,info:'Reveal what the press is about to publish — giving time to respond.'},{id:'certify',plain:'Issue Ethics Certification',tech:'grant/ethics-cert',auth:false,info:'Formally certify a governance decision as meeting ethical standards.'}],
+    spy:[{id:'background',plain:'Share Candidate Background',tech:'intel/candidate-brief',auth:false,info:"Reveal intelligence on a leadership candidate\'s real track record."},{id:'leverage',plain:'Deploy Leverage ⚠⚠',tech:'intel/leverage',auth:true,info:"Use compromising information to steer a board member\'s vote."},{id:'leak',plain:'Controlled Media Leak ⚠',tech:'sanction/media-leak',auth:true,info:'Strategically release information to shape public narrative.'},{id:'intercept',plain:'Share Intercepted Communications',tech:'intel/intercept',auth:false,info:'Reveal what rival factions are privately planning.'},{id:'cover',plain:'Provide Operational Cover',tech:'grant/cover',auth:false,info:"Shield a faction\'s negotiations from external scrutiny."}],
+    agricultural:[{id:'walkout',plain:'Call a Work Stoppage ⚠',tech:'sanction/work-stoppage',auth:true,info:"Authorize employee action if governance demands aren\'t met."},{id:'endorsement',plain:'Workforce Endorsement',tech:'grant/workforce-endorsement',auth:false,info:'Signal that employees publicly support a leadership decision.'},{id:'productivity',plain:'Commit Productivity Guarantee',tech:'commit/productivity',auth:false,info:'Promise stable operations during the transition in exchange for commitments.'},{id:'intel',plain:'Share Employee Intelligence',tech:'intel/workforce-data',auth:false,info:'Reveal what the workforce actually knows about the technology risks.'},{id:'retention',plain:'Key Person Retention Deal',tech:'commit/retention',auth:false,info:'Guarantee that critical employees will stay through the transition.'}],
+    scholars:[{id:'technical-brief',plain:'Technical Risk Briefing',tech:'intel/technical-risk',auth:false,info:"Present a full assessment of the AI system\'s current safety status."},{id:'roadmap',plain:'Share the Real Roadmap',tech:'intel/roadmap',auth:false,info:'Reveal what the technology is actually capable of — and what comes next.'},{id:'slowdown',plain:'Authorize Development Pause ⚠',tech:'sanction/dev-pause',auth:true,info:'Commit to halting a specific capability until governance is resolved.'},{id:'treaty',plain:'Technical Governance Treaty',tech:'commit/tech-treaty',auth:false,info:'Propose binding technical safety commitments all parties must meet.'},{id:'expertise',plain:'Deploy Technical Advisors',tech:'resource/advisors',auth:false,info:'Provide engineering leadership to brief any faction on system risks.'}],
+  },
+  pandemic:{
+    merchant:[{id:'logistics',plain:'Open Logistics Network',tech:'grant/logistics-access',auth:false,info:'Make your global distribution infrastructure available for vaccine and supply movement.'},{id:'supply-intel',plain:'Share Supply Chain Intelligence',tech:'intel/supply-chain',auth:false,info:'Reveal where medical supplies are available, at what price, and who is hoarding.'},{id:'funding',plain:'Commit Emergency Funding',tech:'resource/emergency-fund',auth:false,info:"Release capital to fund another faction\'s response operation."},{id:'embargo',plain:'Supply Embargo ⚠',tech:'sanction/supply-embargo',auth:true,info:'Cut off medical supply access to a non-compliant nation. Extreme leverage.'},{id:'distribution',plain:'Manage Vaccine Distribution',tech:'commit/distribution-mgmt',auth:false,info:"Take operational control of a region\'s vaccine rollout logistics."}],
+    military:[{id:'border-enforce',plain:'Enforce Border Protocol',tech:'commit/border-enforcement',auth:false,info:'Deploy military assets to implement whatever border decision is agreed.'},{id:'field-hospitals',plain:'Deploy Field Hospitals',tech:'resource/field-hospitals',auth:false,info:'Establish emergency medical facilities in outbreak zones.'},{id:'quarantine',plain:'Enforce Quarantine Zones ⚠',tech:'sanction/quarantine-enforce',auth:true,info:'Use military force to maintain containment. Requires sign-off.'},{id:'intel',plain:'Share Threat Intelligence',tech:'intel/threat-brief',auth:false,info:'Provide military-grade outbreak tracking data to another faction.'},{id:'airlift',plain:'Medical Airlift Commitment',tech:'commit/medical-airlift',auth:false,info:'Commit air transport assets to move vaccines and personnel.'}],
+    priestly:[{id:'compliance',plain:'Drive Community Compliance',tech:'commit/community-compliance',auth:false,info:'Mobilize civil society networks to encourage voluntary adherence.'},{id:'trust',plain:'Public Trust Endorsement',tech:'grant/public-trust',auth:false,info:'Issue a joint statement with faith and civic leaders backing the response.'},{id:'disinformation',plain:'Counter Disinformation Campaign',tech:'commit/counter-disinfo',auth:false,info:'Deploy community networks to counter misinformation at the local level.'},{id:'sentiment',plain:'Share Community Sentiment Data',tech:'intel/community-sentiment',auth:false,info:'Reveal real-time public mood, compliance rates, and trust levels by region.'},{id:'protest-risk',plain:'Signal Protest Risk ⚠',tech:'intel/protest-risk',auth:true,info:'Warn that a specific policy will trigger civil unrest. Credible threat.'}],
+    spy:[{id:'outbreak-intel',plain:'Share Classified Outbreak Data',tech:'intel/classified-outbreak',auth:false,info:'Provide intelligence-sourced infection data ahead of official WHO numbers.'},{id:'compliance-data',plain:'Share Covert Compliance Data',tech:'intel/compliance-monitor',auth:false,info:'Reveal which nations are secretly not following the agreed protocol.'},{id:'intercept',plain:'Share Intercepted Supply Data ⚠',tech:'intel/supply-intercept',auth:true,info:'Reveal black-market medical supply movement intelligence.'},{id:'cover',plain:'Provide Operational Cover',tech:'grant/operational-cover',auth:false,info:"Shield another faction\'s sensitive response operations from exposure."},{id:'surveillance',plain:'Commit Surveillance Network',tech:'commit/surveillance',auth:false,info:"Monitor a region\'s outbreak evolution using signals intelligence."}],
+    agricultural:[{id:'food-supply',plain:'Guarantee Food Supply Continuity',tech:'commit/food-continuity',auth:false,info:'Pledge that food supply chains will remain open regardless of border decisions.'},{id:'farmworker',plain:'Prioritize Agricultural Workers',tech:'grant/farmworker-priority',auth:false,info:'Formally advocate for farm and food workers in vaccine allocation.'},{id:'land',plain:'Open Land for Emergency Use',tech:'grant/land-access',auth:false,info:'Make agricultural land available for emergency medical facilities.'},{id:'food-embargo',plain:'Food Supply Threat ⚠',tech:'sanction/food-threat',auth:true,info:"Signal that food supply cooperation ends if demands aren\'t met."},{id:'local-networks',plain:'Activate Local Distribution Networks',tech:'commit/local-networks',auth:false,info:'Use rural agricultural networks to reach communities that formal infrastructure misses.'}],
+    scholars:[{id:'research-data',plain:'Release Research Data',tech:'intel/research-data',auth:false,info:'Share pre-publication vaccine and treatment findings with the Council.'},{id:'trial-access',plain:'Open Clinical Trial Access',tech:'grant/trial-access',auth:false,info:"Allow another faction\'s population to access ongoing trials."},{id:'protocol',plain:'Publish Treatment Protocol',tech:'commit/treatment-protocol',auth:false,info:'Issue global treatment guidelines that any nation can immediately adopt.'},{id:'mandate',plain:'Request Scientific Mandate ⚠',tech:'commit/scientific-mandate',auth:true,info:'Formally request operational leadership of the global research response.'},{id:'expertise',plain:'Deploy Scientific Teams',tech:'resource/scientific-teams',auth:false,info:"Send specialist researchers into any faction\'s territory to assist."}],
+  },
+  signal:{
+    merchant:[{id:'funding',plain:'Fund the Response Infrastructure',tech:'resource/funding',auth:false,info:'Commit private capital to build the communication and monitoring infrastructure.'},{id:'ip-claim',plain:'Assert Technology Rights ⚠',tech:'sanction/ip-claim',auth:true,info:'Pre-emptively claim intellectual property rights over contact-related technology.'},{id:'media-access',plain:'Control Media Access',tech:'grant/media-access',auth:false,info:'Manage which outlets get the story first and under what framing.'},{id:'market-intel',plain:'Share Investor Intelligence',tech:'intel/investor-brief',auth:false,info:'Reveal how markets will react to different disclosure decisions.'},{id:'partnership',plain:'Propose Commercial Partnership',tech:'commit/commercial-pact',auth:false,info:'Offer revenue-sharing on any technology derived from contact.'}],
+    military:[{id:'readiness',plain:'Commit Defense Assets',tech:'commit/defense-readiness',auth:false,info:'Pre-position defense systems regardless of what posture is agreed.'},{id:'classified',plain:'Classify Additional Findings ⚠',tech:'sanction/classify',auth:true,info:'Unilaterally classify analysis not yet shared with the full Council.'},{id:'intel',plain:'Share Defense Intelligence',tech:'intel/defense-brief',auth:false,info:"Reveal classified analysis of the signal\'s origin and structure."},{id:'stand-down',plain:'Offer Coordinated Stand-Down',tech:'commit/stand-down',auth:false,info:'Agree to lower global military posture if other factions reciprocate.'},{id:'comms-control',plain:'Assert Communication Control ⚠',tech:'sanction/comms-control',auth:true,info:'Take control of all transmission infrastructure. Extreme — requires sign-off.'}],
+    priestly:[{id:'moral-frame',plain:'Issue a Moral Framework',tech:'commit/moral-framework',auth:false,info:'Publish a statement framing the contact as a spiritual event, not a threat.'},{id:'public-address',plain:'Global Public Address',tech:'grant/public-address',auth:false,info:'Offer to deliver a unified public message to calm global reaction.'},{id:'intercession',plain:'Intercede with Dissenting Factions',tech:'commit/intercession',auth:false,info:'Use moral authority to bring a resistant faction back to the table.'},{id:'sentiment',plain:'Share Public Reaction Intelligence',tech:'intel/public-reaction',auth:false,info:'Reveal how different communities are responding to early rumors of the signal.'},{id:'silence',plain:'Call for Global Silence ⚠',tech:'sanction/media-silence',auth:true,info:'Request all factions impose a 24-hour media blackout. Controversial — needs sign-off.'}],
+    spy:[{id:'signal-analysis',plain:'Share Signal Analysis',tech:'intel/signal-analysis',auth:false,info:"Release the intelligence community\'s full decoding of the signal structure."},{id:'hidden-findings',plain:'Release Hidden Findings ⚠',tech:'intel/classified-signal',auth:true,info:'Declassify the seventeen minutes of analysis not shared with the full Council.'},{id:'intercept',plain:'Share Intercept Intelligence',tech:'intel/intercept',auth:false,info:'Reveal which governments have been privately tracking the signal for years.'},{id:'cover-ops',plain:'Provide Operational Security',tech:'commit/opsec',auth:false,info:'Ensure this room stays secret for as long as the Council needs.'},{id:'disinformation',plain:'Deploy Disinformation Cover ⚠',tech:'sanction/disinfo-cover',auth:true,info:'Seed false stories to buy more time before the real signal breaks publicly.'}],
+    agricultural:[{id:'broadcast',plain:'Open Civilian Broadcast Networks',tech:'grant/broadcast-access',auth:false,info:'Make public broadcast infrastructure available for whatever announcement is agreed.'},{id:'public-voice',plain:'Demand a Public Vote',tech:'commit/public-referendum',auth:false,info:'Formally demand that any response decision be put to a broader democratic process.'},{id:'transparency',plain:'Full Transparency Pledge',tech:'commit/transparency',auth:false,info:'Commit that everything decided in this room will eventually be made public.'},{id:'protest',plain:'Signal Mass Protest Risk ⚠',tech:'sanction/protest-threat',auth:true,info:'Warn that public exclusion from this decision will trigger global civil unrest.'},{id:'local-comms',plain:'Activate Local Communication Networks',tech:'commit/local-comms',auth:false,info:'Use grassroots networks to prepare communities for whatever disclosure is agreed.'}],
+    scholars:[{id:'decode',plain:'Share Full Signal Decoding',tech:'intel/signal-decode',auth:false,info:"Release the complete scientific analysis of the signal\'s mathematical structure."},{id:'response-plan',plain:'Present the Response Protocol',tech:'commit/response-protocol',auth:false,info:'Formally table the SETI response plan that has been in preparation since 1999.'},{id:'respond-now',plain:'Authorize Immediate Response ⚠',tech:'commit/immediate-response',auth:true,info:'Unilaterally begin transmitting a response signal. Irreversible — requires sign-off.'},{id:'archive',plain:'Open the Full Signal Archive',tech:'grant/archive-access',auth:false,info:'Share decades of pre-discovery observation data with all factions.'},{id:'expertise',plain:'Deploy Scientific Liaisons',tech:'resource/liaisons',auth:false,info:'Embed scientific advisors in every faction\'s team to ensure informed decision-making.'}],
+  },
+};
+
+const PERSONAS={plague:{merchant:null,military:null,priestly:null,spy:null,agricultural:null,scholars:null},boardroom:{merchant:{name:'Investor Bloc',agentName:'QUORUM',sigil:'💹',tagline:'Capital decides everything. The question is whose.',desc:"You represent the activist investors who control the largest voting bloc on the board."},military:{name:'Defense Contracts',agentName:'FORTRESS',sigil:'🛡',tagline:'The product roadmap is a national security asset.',desc:"Your consortium holds defense contracts representing 40% of Axiom's revenue."},priestly:{name:'Ethics Coalition',agentName:'CHARTER',sigil:'⚖',tagline:'Accountability has to be built in now, or it never will be.',desc:'A coalition of civil society groups demanding AI oversight. The power vacuum is your window.'},spy:{name:'Intelligence Office',agentName:'CIPHER',sigil:'◈',tagline:"You know who the candidates really are. That's leverage.",desc:'Your office has deep background on every succession candidate. You need the right outcome.'},agricultural:{name:'Labor Council',agentName:'UNION',sigil:'✊',tagline:'Twelve thousand employees are watching this vote.',desc:"The organized labor council representing Axiom's global workforce."},scholars:{name:'Technical Leadership',agentName:'AXIOM',sigil:'⬡',tagline:'The people who built this understand the risks.',desc:"Senior engineering leadership who built Axiom's AI systems."}},pandemic:{merchant:{name:'Global Commerce Bloc',agentName:'LOGIS',sigil:'🌐',tagline:'Supply chains are the immune system of civilization.',desc:'The consortium representing global trade and pharmaceutical distribution.'},military:{name:'Joint Defense Command',agentName:'SENTINEL',sigil:'⚔',tagline:'A pathogen without borders requires a response without hesitation.',desc:'The multinational military coordination command with border enforcement capacity.'},priestly:{name:'Civil Society Network',agentName:'ACCORD',sigil:'🤝',tagline:'You cannot enforce compliance. You have to earn it.',desc:'A coalition of NGOs and faith communities with ground-level trust worldwide.'},spy:{name:'Intelligence Consortium',agentName:'PRISM',sigil:'◈',tagline:"Your outbreak data is three days ahead of the WHO's.",desc:'Joint signals intelligence coalition sharing outbreak spread intelligence.'},agricultural:{name:'Food Security Alliance',agentName:'HARVEST',sigil:'🌾',tagline:'If the food supply breaks, everything else is irrelevant.',desc:'International alliance of agricultural producers and humanitarian food agencies.'},scholars:{name:'Scientific Coalition',agentName:'NEXUS',sigil:'🔬',tagline:'The cure exists in our labs. How it gets deployed is the question.',desc:'International consortium of research institutions who developed the vaccine candidates.'}},signal:{merchant:{name:'Commercial Interests',agentName:'VENTURE',sigil:'💰',tagline:'First contact is the largest untapped market in human history.',desc:'A coalition of aerospace companies and venture capital with enormous stake in this moment.'},military:{name:'Defense Command',agentName:'WATCHMAN',sigil:'🛡',tagline:'You do not know if it is friendly. Plan accordingly.',desc:'The multinational defense command. You have been preparing contingency protocols for forty years.'},priestly:{name:'Moral Authority',agentName:'VOICE',sigil:'✦',tagline:'This is the most significant moment in human spiritual history.',desc:'A coalition representing world faith traditions and humanitarian bodies.'},spy:{name:'Intelligence Services',agentName:'SPECTRE',sigil:'◈',tagline:'The signal has been analyzed. Not all findings are in this room.',desc:'Joint signals intelligence directorate that first decoded the signal.'},agricultural:{name:"People's Coalition",agentName:'COMMONS',sigil:'🌍',tagline:'Humanity was not asked if it wanted a representative.',desc:'Civil society organizations arguing the seven billion not in this room deserve a voice.'},scholars:{name:'Scientific Union',agentName:'KEPLER',sigil:'🔭',tagline:'We have been waiting for this signal for sixty years. We are ready.',desc:'International union of astronomers and SETI researchers. The response plan exists. You wrote it.'}}};
+
+const BUILTIN=[{id:'plague',emoji:'🦠',name:'The Crimson Plague',subtitle:'A deadly illness is spreading. The Council must act.',color:'#A03A3A',maxRounds:6,description:'A plague is tearing through the eastern provinces. Cities are shutting their gates. The Council must agree — on who controls the response, who funds it, and who gets protected first. Fail to agree and everyone loses.',techNote:'6-round Mycelium session. CognitiveEngine mediates. AGNTCY verifies every agent action.',issues:[{id:'quarantine',plain:'How do we stop the spread?',label:'Quarantine Approach',options:['Strict lockdown','Moderate controls','Voluntary measures']},{id:'resources',plain:'Who gets help first?',label:'Resource Distribution',options:['Split equally','Hardest-hit areas first','Biggest contributors']},{id:'research',plain:'Who runs the cure effort?',label:'Research Lead',options:['Scholars lead','Military secures it','Everyone contributes']},{id:'enforcement',plain:'Who makes sure people follow the rules?',label:'Enforcement',options:['Military enforces','Church guides','Communities self-govern']}]},{id:'boardroom',emoji:'🏢',name:'The Board Room',subtitle:'The founder is gone. Six factions have 72 hours.',color:'#4A7FBF',maxRounds:5,description:"Axiom Technologies' founder has died unexpectedly. The company controls critical AI infrastructure. Six board factions have 72 hours to agree on succession, financial controls, mission direction, and the role of the AI ethics board.",techNote:'5-round Mycelium session. TBAC enforces board-level authorization tiers.',issues:[{id:'leadership',plain:'Who takes the helm?',label:'Interim Leadership',options:['COO steps up','Independent chair','Founding family returns']},{id:'treasury',plain:'Who controls the money?',label:'Financial Authority',options:['CFO holds the keys','Board committee','Independent trustee']},{id:'mission',plain:'What does the company stand for right now?',label:'Mission Statement',options:['Safety above growth','Continue current strategy','Accelerate the roadmap']},{id:'ethics',plain:'What power does the AI ethics board have?',label:'Ethics Board Role',options:['Full veto power','Advisory only','Dissolved pending review']}]},{id:'pandemic',emoji:'🌍',name:'Pathogen Zero',subtitle:'96 hours to global containment — or permanent endemic.',color:'#3D9D6A',maxRounds:7,description:'A novel airborne pathogen with a 14-day asymptomatic window has been confirmed in 11 cities across 6 continents. Six global factions have a narrow window to agree on a coordinated response — or watch containment fail permanently.',techNote:'7-round Mycelium session. WHO-equivalent TBAC tiers enforced by AGNTCY.',issues:[{id:'borders',plain:'Do we close international borders?',label:'Border Protocol',options:['72-hour full closure','Biometric screening only','Open with real-time monitoring']},{id:'vaccines',plain:'How do we distribute the vaccine stockpile?',label:'Vaccine Allocation',options:['Auction to highest bidder','Healthcare workers globally first','Proportional by outbreak severity']},{id:'data',plain:'Do nations share live patient data?',label:'Data Sharing Protocol',options:['Mandatory open feed','Anonymized aggregate only','Voluntary opt-in']},{id:'command',plain:'Who calls the shots on the global response?',label:'Command Structure',options:['WHO takes operational control','Rotating national leadership','Each nation acts independently']}]},{id:'signal',emoji:'📡',name:'The Signal',subtitle:'An extraterrestrial signal has been confirmed. You have one hour.',color:'#7B5EA7',maxRounds:6,description:"It is confirmed: we are not alone. At 03:17 UTC, three independent observatories detected a structured signal of verified extraterrestrial origin — 4.2 light years away, a mathematical response to the Voyager probe. Someone received it. And they answered. Six factions have one hour before the story breaks globally.",techNote:'6-round Mycelium session. Highest AGNTCY authorization tier. Session memory sealed after ratification.',issues:[{id:'disclose',plain:'Do we tell the public — and when?',label:'Disclosure Timeline',options:['Immediate full release','Controlled release in 48 hours','Classified until further notice']},{id:'respond',plain:'Do we send a response signal?',label:'Response Decision',options:['Respond immediately','Convene global vote first','No response — observe only']},{id:'speaks',plain:'Who speaks for humanity?',label:'Representative Authority',options:['UN Secretary-General','Scientific coalition','No single voice — open transmission']},{id:'military',plain:'What is the military posture?',label:'Defense Posture',options:['Stand down globally','Maintain current readiness','Elevate to high alert']}]}];
+
+const OBJECTIVES={plague:{merchant:{goal:'Ensure the cure is commercialized, not collectivized',hint:'Push for "Biggest contributors" on resources and "Military secures it" on research.',targets:{resources:'Biggest contributors',research:'Military secures it'}},military:{goal:'Expand military authority under cover of the crisis',hint:'Push for "Military enforces" and "Military secures it" on research.',targets:{enforcement:'Military enforces',research:'Military secures it'}},priestly:{goal:'Establish moral leadership of the response',hint:'Push for "Church guides" and "Moderate controls" on quarantine.',targets:{enforcement:'Church guides',quarantine:'Moderate controls'}},spy:{goal:'Keep information fragmented so your intelligence stays valuable',hint:'Push for "Voluntary measures" and "Everyone contributes" on research.',targets:{quarantine:'Voluntary measures',research:'Everyone contributes'}},agricultural:{goal:'Tie supply to compliance — your leverage grows',hint:'Push for "Strict lockdown" and "Hardest-hit areas first".',targets:{quarantine:'Strict lockdown',resources:'Hardest-hit areas first'}},scholars:{goal:'Win the mandate to lead the cure and own the findings',hint:'Push for "Scholars lead" and "Moderate controls" on quarantine.',targets:{research:'Scholars lead',quarantine:'Moderate controls'}}},boardroom:{merchant:{goal:'Lock in financial controls before anyone can restructure',hint:'Push for "CFO holds the keys" and "Safety above growth".',targets:{treasury:'CFO holds the keys',mission:'Safety above growth'}},military:{goal:'Keep the ethics board neutered and the roadmap moving',hint:'Push for "Advisory only" on ethics and "Accelerate the roadmap".',targets:{ethics:'Advisory only',mission:'Accelerate the roadmap'}},priestly:{goal:'Ensure the ethics board has real teeth',hint:'Push for "Full veto power" and "Safety above growth".',targets:{ethics:'Full veto power',mission:'Safety above growth'}},spy:{goal:'Install leadership you can influence and dissolve oversight',hint:'Push for "Independent chair" and "Dissolved pending review" on ethics.',targets:{leadership:'Independent chair',ethics:'Dissolved pending review'}},agricultural:{goal:'Protect worker interests and long-term stability',hint:'Push for "Independent trustee" and "Safety above growth".',targets:{treasury:'Independent trustee',mission:'Safety above growth'}},scholars:{goal:'Keep the mission anchored in knowledge, not speed',hint:'Push for "Full veto power" on ethics and "COO steps up".',targets:{ethics:'Full veto power',leadership:'COO steps up'}}},pandemic:{merchant:{goal:'Ensure vaccine distribution flows through commercial channels',hint:'Push for "Auction to highest bidder" and "Voluntary opt-in" on data.',targets:{vaccines:'Auction to highest bidder',data:'Voluntary opt-in'}},military:{goal:'Establish operational control that outlasts the pandemic',hint:'Push for "WHO takes operational control" and "72-hour full closure".',targets:{command:'WHO takes operational control',borders:'72-hour full closure'}},priestly:{goal:'Keep communities connected and self-determining',hint:'Push for "Open with real-time monitoring" and "Each nation acts independently".',targets:{borders:'Open with real-time monitoring',command:'Each nation acts independently'}},spy:{goal:'Keep health data siloed so your intelligence advantage holds',hint:'Push for "Voluntary opt-in" and "Each nation acts independently".',targets:{data:'Voluntary opt-in',command:'Each nation acts independently'}},agricultural:{goal:'Protect food supply chains and workers first',hint:'Push for "Biometric screening only" and "Healthcare workers globally first".',targets:{borders:'Biometric screening only',vaccines:'Healthcare workers globally first'}},scholars:{goal:'Win full data access to lead the research',hint:'Push for "Mandatory open feed" and "Proportional by outbreak severity".',targets:{data:'Mandatory open feed',vaccines:'Proportional by outbreak severity'}}},signal:{merchant:{goal:'Control the commercial rights to any technology transfer',hint:'Push for "Controlled release in 48 hours" and "Scientific coalition".',targets:{disclose:'Controlled release in 48 hours',speaks:'Scientific coalition'}},military:{goal:'Elevate readiness and control the response posture',hint:'Push for "Elevate to high alert" and "Classified until further notice".',targets:{military:'Elevate to high alert',disclose:'Classified until further notice'}},priestly:{goal:'Ensure humanity speaks with a unified moral voice',hint:'Push for "UN Secretary-General" and "No response — observe only".',targets:{speaks:'UN Secretary-General',respond:'No response — observe only'}},spy:{goal:'Classify the signal and use the information advantage',hint:'Push for "Classified until further notice" and "Maintain current readiness".',targets:{disclose:'Classified until further notice',military:'Maintain current readiness'}},agricultural:{goal:'Ensure the response reflects all of humanity',hint:'Push for "No single voice — open transmission" and "Immediate full release".',targets:{speaks:'No single voice — open transmission',disclose:'Immediate full release'}},scholars:{goal:'Respond immediately and lead the scientific dialogue',hint:'Push for "Respond immediately" and "Scientific coalition".',targets:{respond:'Respond immediately',speaks:'Scientific coalition'}}}};
+
+const GLOSSARY=[{term:'AI Agent',tech:'Agent (AGNTCY ADS)',def:'Software that negotiates on your behalf using rules you define. Registered and verified in the AGNTCY Agent Directory Service.'},{term:'Negotiation Room',tech:'Mycelium Session',def:'The secure environment where your agents exchange proposals and reach agreements — powered by Mycelium.'},{term:'Secret Key',tech:'SPIFFE Identity / SVID',def:'A cryptographic identity proving your agent is genuinely yours. Cannot be faked or transferred.'},{term:'Rules Your Agent Must Follow',tech:'TBAC Policy',def:'Task-Based Access Control. Defines exactly what your agent can offer, accept, or veto.'},{term:'Personal Sign-Off',tech:'Countersign / Human-in-Loop',def:'Some moves are too significant for your agent alone. It pauses and waits for your explicit authorization.'},{term:'Permanent Record',tech:'Room Memory (Mycelium)',def:'Everything agreed is written to tamper-proof memory. Agents cannot deny or alter what was decided.'},{term:'Neutral Mediator',tech:'CognitiveEngine (Mycelium)',def:'Runs each negotiation round, identifies agreement, and guides agents toward consensus.'},{term:'Agent Directory',tech:'AGNTCY.org',def:'The open Linux Foundation initiative providing agent identity, discovery, and authorization. The trust layer for AI agents.'}];
+
+// ═══════════════════ WEBEX INTEGRATION ══════════════════
+const WX_TOKEN = 'MTgyMzhmZDItYjljNC00YjUzLTg4MTMtNWU3ZjFmYjllZGVjNDY1NDE2YzYtMWJk_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f';
+const WX_SPACE = 'Y2lzY29zcGFyazovL3VzL1JPT00vZWU0MjljNDAtNDliZi0xMWYxLTg5MDUtY2IxYjhjMTY4NWEw';
+
+async function wxPost(text, markdown){
+  try{
+    await fetch('https://webexapis.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+WX_TOKEN},
+      body:JSON.stringify({roomId:WX_SPACE, text:text, markdown:markdown||text})
+    });
+  }catch(e){console.warn('Webex post failed:',e);}
+}
+
+async function wxPostCard(title, body){
+  const md=`**${title}**\n\n${body}`;
+  await wxPost(title+' '+body, md);
+}
+
+// ═══════════════════ STATE ════════════════════════════════
+const S={phase:'landing',techMode:false,apiKey:'',myFaction:null,myAgent:null,scenario:null,players:[],myObjective:null,sessionState:'idle',sessionRound:0,agreementScore:0,resolvedIssues:{},myProposal:{},maxRounds:6,msgs:[],auditLog:[],pendingCS:null,gameResult:null,toast:null,chamberTab:'negotiate',objRevealed:false,deliberateSecs:0,deliberateTimer:null,broadcastSignals:[],privateThread:null,privateOpen:false,pendingPrivate:null,customScenarios:[],tempScenario:null,expandedFaction:null,expandedOffer:null,builderOpen:false,builderData:{name:'',description:'',aiPrompt:'',issues:[{plain:'',options:['','','']}]},builderLoading:false,builderError:null};
+let roundRef=0;
+
+// ═══════════════════ HELPERS ══════════════════════════════
+function rgb(h){const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h||'');return r?`${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}`:'128,128,128';}
+function el(tag,props={},...kids){
+  const e=document.createElement(tag);
+  for(const[k,v]of Object.entries(props)){
+    if(k==='style'&&typeof v==='object')Object.assign(e.style,v);
+    else if(k==='cls')e.className=v;
+    else if(k.startsWith('on')&&k.length>2)e.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='disabled'){if(v)e.disabled=true;}  // only set disabled when truly true
+    else if(v!==false&&v!=null)e.setAttribute(k,v); // skip false/null attributes
+  }
+  for(const c of kids.flat(99)){if(c==null||c===false)continue;e.appendChild(typeof c==='string'?document.createTextNode(c):c);}
+  return e;
+}
+function av(f,sz=44,fs=20){return el('div',{cls:'av',style:{width:sz,height:sz,fontSize:fs,backgroundColor:`rgba(${rgb(f.color)},0.14)`,borderColor:f.color,color:f.color}},f.sigil);}
+function bdg(t,c='#C9A84C'){return el('span',{cls:'badge',style:{color:c,borderColor:c,backgroundColor:`rgba(${rgb(c)},0.1)`}},t);}
+function T(plain,tech){return S.techMode?tech:plain;}
+function allScenarios(){return[...BUILTIN,...S.customScenarios];}
+function persona(faction,scId){
+  // Check built-in personas first, then custom scenario personas
+  let p=PERSONAS[scId]?.[faction.id];
+  const sc=allScenarios().find(s=>s.id===scId);
+  if(!p&&sc?.customPersonas?.[faction.id]) p=sc.customPersonas[faction.id];
+
+  // Offers: built-in table → custom AI-generated → fallback to base faction offers
+  let offers=SCENARIO_OFFERS[scId]?.[faction.id];
+  if(!offers&&sc?.customOffers?.[faction.id]){
+    // Map AI-generated offers: add id and tech fields if missing
+    offers=sc.customOffers[faction.id].map((o,i)=>({
+      id:`custom-offer-${i}`,
+      plain:o.plain,
+      tech:o.plain.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+      auth:o.auth||false,
+      info:o.info||o.plain,
+    }));
+  }
+
+  const patch={};
+  if(p) Object.assign(patch,p);
+  if(offers) patch.offers=offers;
+  return Object.keys(patch).length?{...faction,...patch}:faction;
+}
+
+// ═══════════════════ AUDIO ════════════════════════════════
+let _ac=null,audioOn=true;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
+function tone(f,d,type='sine',g=0.26,delay=0){if(!audioOn)return;try{const c=ac(),o=c.createOscillator(),gn=c.createGain();o.connect(gn);gn.connect(c.destination);o.type=type;o.frequency.value=f;gn.gain.setValueAtTime(0,c.currentTime+delay);gn.gain.linearRampToValueAtTime(g,c.currentTime+delay+0.05);gn.gain.exponentialRampToValueAtTime(0.001,c.currentTime+delay+d);o.start(c.currentTime+delay);o.stop(c.currentTime+delay+d+0.05);}catch(e){}}
+function chord(fs,d,type='sine',g=0.2){fs.forEach((f,i)=>tone(f,d,type,g,i*0.035));}
+const SFX={select:()=>{tone(220,0.12,'triangle',0.18);tone(277,0.18,'sine',0.13,0.09);},submit:()=>{chord([98,123,147],1.1,'sawtooth',0.16);tone(65,1.4,'sine',0.22,0.08);},agreed:()=>{tone(523,0.1,'sine',0.28);tone(659,0.14,'sine',0.22,0.07);tone(784,0.38,'sine',0.18,0.16);},complete:()=>{[261,329,392,523,659,784,1047].forEach((f,i)=>tone(f,0.5,'triangle',0.26,i*0.11));[65,98,130].forEach((f,i)=>tone(f,1.8,'sine',0.18,i*0.1));},collapse:()=>{[392,349,311,277,233,196].forEach((f,i)=>tone(f,0.6,'sawtooth',0.18,i*0.14));},tick:()=>{tone(440,0.07,'sine',0.18);tone(330,0.1,'sine',0.13,0.05);},signal:()=>{tone(660,0.08,'sine',0.15);tone(880,0.12,'sine',0.1,0.07);}};
+
+// ═══════════════════ TECH PANEL ═══════════════════════════
+function tpSec(title,...items){
+  const s=el('div',{cls:'tp-sec'});s.appendChild(el('div',{cls:'tp-stit'},title));
+  items.forEach(item=>{const d=el('div',{cls:'tp-item'});if(item.label)d.appendChild(el('div',{cls:'tp-lbl'},item.label));if(item.val)d.appendChild(el('div',{cls:'tp-val'},item.val));if(item.desc)d.appendChild(el('div',{cls:'tp-desc'},item.desc));if(item.link)d.appendChild(el('a',{cls:'tp-link',href:item.link,target:'_blank'},item.link));s.appendChild(d);});
+  return s;
+}
+function updateTP(){
+  const body=document.getElementById('tp-body');if(!body)return;body.innerHTML='';
+  const{phase,myFaction,myAgent,scenario,players,sessionState,sessionRound,agreementScore,resolvedIssues,chamberTab}=S;
+  if(phase==='landing'||phase==='library'){
+    body.appendChild(tpSec('AGNTCY.ORG',{label:'WHAT IT IS',desc:'An open Linux Foundation initiative providing identity, discovery, and authorization for AI agents. Think of it as DNS + PKI for agents.'},{label:'IN THIS GAME',desc:'Every faction agent is registered in the AGNTCY Agent Directory Service (ADS) with a cryptographic SPIFFE identity. No agent can act without a verified identity.'},{link:'https://agntcy.org'}));
+    body.appendChild(tpSec('MYCELIUM',{label:'WHAT IT IS',desc:'An open-source multi-agent coordination layer built on OpenClaw. Provides persistent rooms, structured negotiation sessions, and a CognitiveEngine that mediates proposals.'},{label:'IN THIS GAME',desc:'Every negotiation round is a Mycelium session. Proposals are submitted, the CognitiveEngine finds consensus, and agreements are written to tamper-proof room memory.'},{link:'https://mycelium-io.github.io/mycelium/'}));
+    body.appendChild(tpSec('OASF — OPEN AGENT SCHEMA FRAMEWORK',{label:'WHAT IT IS',desc:"A Linux Foundation standard defining how agents describe capabilities and constraints. Each faction's TBAC policy is expressed as an OASF capability document."}));
+  }
+  if(phase==='pick'){
+    body.appendChild(tpSec('AGNTCY AGENT DIRECTORY (ADS)',{label:'STATUS',val:'PENDING REGISTRATION'},{label:'SPIFFE FORMAT',val:'spiffe://council.agntcy/faction/[name]',desc:'SPIFFE (Secure Production Identity Framework) is a CNCF standard for cryptographic workload identity.'}));
+    body.appendChild(tpSec('SCENARIO PARAMETERS',{label:'SCENARIO',val:S.tempScenario?.name||'Not selected'},{label:'MAX ROUNDS',val:`${S.tempScenario?.maxRounds||6} Mycelium session rounds`},{label:'AGENTS',val:`${FACTIONS.length} factions will register in AGNTCY ADS`}));
+    body.appendChild(tpSec('TBAC — TASK-BASED ACCESS CONTROL',
+      {desc:"Each faction has a distinct OASF capability profile — what it can offer, veto, and what requires human countersign. Your agent enforces these bounds automatically."},
+      {label:'⚠ NEEDS SIGN-OFF (plain English)',desc:"Some offers are too significant for your agent to make alone. When your agent reaches one of these, the game pauses and asks for your personal authorization before anything happens. You will see a banner asking you to approve."},
+      {label:'⚠ TBAC COUNTERSIGN — what TBAC means',desc:"TBAC stands for Task-Based Access Control — the policy layer that defines exactly what your agent is and is not allowed to do autonomously. A Countersign is what happens when an action exceeds that boundary: the agent stops, and a human must explicitly authorize it before the Mycelium session records the action. This is the Human-in-the-Loop safeguard built into the AGNTCY trust model."}
+    ));
+  }
+  if(phase==='briefing'){
+    body.appendChild(tpSec('AGENT REGISTERED',{label:'HANDLE',val:myAgent?.handle||'—'},{label:'SPIFFE ID',val:myAgent?.spiffeId||'—',desc:'Attached to every message. Cannot be spoofed or transferred.'},{label:'SECRET KEY',val:(myAgent?.key||'').slice(0,16)+'…',desc:'Private signing key. Never transmitted.'}));
+    body.appendChild(tpSec('MYCELIUM ROOM',{label:'STATUS',val:'INITIALIZING'},{label:'ROOM ID',val:`council-${scenario?.id||'?'}-${Date.now().toString(36)}`}));
+    body.appendChild(tpSec('TBAC POLICY',{label:'FACTION',val:myFaction?.name||'—'},{label:'AUTHORIZED OFFERS',val:`${myFaction?.offers?.length||0} offer types`},{label:'COUNTERSIGN REQUIRED',val:myFaction?.offers?.filter(o=>o.auth).map(o=>o.tech).join(', ')||'none'}));
+  }
+  if(phase==='chamber'){
+    const settled=Object.values(resolvedIssues).filter(Boolean).length,total=scenario?.issues?.length||0;
+    if(chamberTab==='negotiate'){
+      body.appendChild(tpSec('MYCELIUM SESSION',{label:'ROUND',val:`${sessionRound} of ${S.maxRounds}`},{label:'SESSION STATE',val:sessionState.toUpperCase()},{label:'ITEMS RESOLVED',val:`${settled} / ${total}`,desc:'Each resolved item is written to Mycelium room memory with all agent SPIFFE signatures. Cannot be altered.'}));
+      body.appendChild(tpSec('COGNITIVEENGINE',{label:'CONSENSUS THRESHOLD',val:`${Math.ceil((S.players?.length||6)*0.55)} of ${S.players?.length||6} agents must agree`,desc:'When enough agents agree on an item, it is sealed and written to room memory immediately.'},{label:'CONVERGENCE MODEL',desc:'AI agents start with fixed positions. Each round they have increasing probability of moving toward your position.'}));
+      body.appendChild(tpSec('BROADCAST SIGNALS',{desc:'When you signal "flexible" or "I need this", it posts to the Webex channel. All agents see it. In Mycelium terms this is a session.signal() call — public intent declaration.'}));
+      body.appendChild(tpSec('SECURE 1:1 CHANNEL',{desc:'Private agent-to-agent negotiation uses a bilateral Mycelium session — visible only to the two participants. SPIFFE identity verified on both sides.'}));
+    }
+    if(chamberTab==='webex'){body.appendChild(tpSec('WEBEX SPACE',{label:'IN PRODUCTION',desc:'A live Webex Space where every agent message is posted by a Webex Bot. Players see the same messages in their Webex app on any device.'},{label:'MESSAGE VERIFICATION',desc:"Every agent message is signed with the sending agent's SPIFFE identity. The ✓ verified badge means it cannot have been sent by anyone else."}));body.appendChild(tpSec('SLIM — SECURE LAYER FOR INTER-AGENT MESSAGING',{desc:'A component of AGNTCY that cryptographically seals every agent-to-agent message. Proves authenticity, prevents tampering, stops replay attacks.'}));}
+    if(chamberTab==='evidence'){body.appendChild(tpSec('MYCELIUM ROOM MEMORY',{label:'WHAT IT IS',desc:'Every agent action is written to a persistent, append-only knowledge graph. Cannot be deleted or altered.'},{label:'WHY IT MATTERS',desc:"If an agent denied making an offer, this record — signed with their SPIFFE identity — is the proof."}));body.appendChild(tpSec('SPIFFE VERIFICATION',{desc:"Every audit entry is signed by the writing agent's private key. The SPIFFE ID tells you exactly which agent wrote it. The handle can be faked — the cryptographic identity cannot."}));}
+  }
+  if(phase==='results'){
+    body.appendChild(tpSec('SESSION COMPLETE',{label:'MYCELIUM ROOM MEMORY',desc:'The ratified treaty is written to room memory, signed by all agent SPIFFE identities. Cannot be altered or denied.'},{label:'AGNTCY AUDIT TRAIL',desc:'Every proposal, rejection, countersign, and round result logged with cryptographic identity proofs.'}));
+    body.appendChild(tpSec('WHAT THIS DEMONSTRATES',{desc:'This game is a working prototype of the AGNTCY + Mycelium stack: verified agent identities, TBAC-enforced constraints, structured negotiation, and tamper-proof outcome recording.'},{desc:'In a real deployment, these same primitives govern AI agents making consequential decisions across organizations.'}));
+    body.appendChild(tpSec('LEARN MORE',{link:'https://agntcy.org'},{link:'https://mycelium-io.github.io/mycelium/'}));
+  }
+  // Glossary
+  const gs=el('div',{cls:'tp-sec',style:{marginTop:'24px'}});gs.appendChild(el('div',{cls:'tp-stit'},T('WHAT DO THESE TERMS MEAN?','TECHNICAL GLOSSARY')));
+  GLOSSARY.forEach(g=>{const gi=el('div',{cls:'tp-item'});gi.appendChild(el('div',{cls:'tp-lbl'},T(g.term,g.tech)));gi.appendChild(el('div',{cls:'tp-desc'},g.def));gs.appendChild(gi);});
+  body.appendChild(gs);
+}
+function openTP(){S.techMode=true;document.getElementById('tech-panel').classList.add('open');document.getElementById('tech-overlay').classList.add('open');updateTP();syncTB();}
+function closeTP(){S.techMode=false;document.getElementById('tech-panel').classList.remove('open');document.getElementById('tech-overlay').classList.remove('open');syncTB();}
+function syncTB(){document.querySelectorAll('.tech-pill button').forEach(b=>{b.classList.toggle('on',(b.dataset.mode==='tech')===S.techMode);});document.querySelectorAll('.tb-lbl').forEach(l=>{l.textContent=S.techMode?'Technical view':'Plain English';});}
+function techBar(){
+  const bar=el('div',{cls:'tech-bar'});
+  bar.appendChild(el('span',{cls:'tb-lbl'},S.techMode?'Technical view':'Plain English'));
+  const pill=el('div',{cls:'tech-pill'});
+  pill.appendChild(el('button',{'data-mode':'plain',cls:!S.techMode?'on':'',onclick:closeTP},'Plain'));
+  pill.appendChild(el('button',{'data-mode':'tech',cls:S.techMode?'on':'',onclick:openTP},'Tech'));
+  bar.appendChild(pill);return bar;
+}
+
+// ═══════════════════ GAME LOGIC ═══════════════════════════
+function mkAgent(f){return{handle:`${f.agentName.toLowerCase()}-${Math.random().toString(36).slice(2,6)}`,spiffeId:f.spiffeId,key:`sk_${Math.random().toString(36).slice(2,18)}`,factionId:f.id};}
+function postMsg(text,fId,sys=false){
+  const pl=S.players.find(p=>p.faction.id===fId);
+  const f=pl?pl.faction:FACTIONS.find(x=>x.id===fId);
+  S.msgs=[...S.msgs,{id:`${Date.now()}-${Math.random()}`,text,fId,sys,ts:Date.now(),fname:f?.name||'Council',aname:f?.agentName||'GM',color:f?.color,signed:!sys}];
+  // Mirror to Webex — agent messages and system events
+  if(text&&WX_TOKEN){
+    const sender=sys?'🏛 Council GM':`🤖 ${f?.agentName||'Agent'} (${f?.name||'Council'})`;
+    wxPost(`${sender}: ${text}`,`**${sender}**\n${text}`);
+  }
+}
+function addAudit(e){S.auditLog=[...S.auditLog,{...e,ts:Date.now()}];}
+function ceTick(round,positions,issues){
+  if(!issues.length)return{round:round+1,consensus:{},score:100,done:true,fail:false};
+  const consensus={};let prox=0;
+  issues.forEach(issue=>{const votes=positions.map(p=>p[issue.id]);const tally={};votes.forEach(v=>{tally[v]=(tally[v]||0)+1;});const[best,count]=Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];const share=count/positions.length;if(share>=0.55){consensus[issue.id]=best;prox+=1;}else{consensus[issue.id]=null;prox+=(share/0.55)*0.85;}});
+  const sc=Math.round((prox/issues.length)*100);const allOk=Object.values(consensus).every(v=>v!==null);
+  return{round:round+1,consensus,score:sc,done:allOk&&round>=2,fail:round>=5&&!allOk};
+}
+function joinGame(faction,scenario){
+  const fp=persona(faction,scenario.id);const agent=mkAgent(fp);
+  const init={};scenario.issues.forEach(i=>{init[i.id]=i.options[0];});
+  const others=FACTIONS.filter(f=>f.id!==faction.id);
+  const players=[{faction:fp,agent,isMe:true},...others.map(f=>{const p=persona(f,scenario.id);return{faction:p,agent:mkAgent(p),isMe:false,prefs:scenario.issues.map(()=>Math.floor(Math.random()*3))};})];
+  // Look up objective: built-in table first, then custom scenario objectives
+  let obj=OBJECTIVES[scenario.id]?.[faction.id]||null;
+  if(!obj&&scenario.customObjectives){
+    const raw=scenario.customObjectives[faction.id];
+    if(raw){
+      // Remap issue keys: the AI uses issue0/issue1 etc, map to actual issue ids
+      const remappedTargets={};
+      Object.entries(raw.targets||{}).forEach(([k,v])=>{
+        const idx=parseInt(k.replace('issue',''));
+        const actualId=scenario.issues[idx]?.id;
+        if(actualId) remappedTargets[actualId]=v;
+      });
+      obj={goal:raw.goal,hint:raw.hint,targets:remappedTargets};
+    }
+  }
+  roundRef=0;
+  Object.assign(S,{myFaction:fp,myAgent:agent,scenario,players,myProposal:init,msgs:[],auditLog:[],resolvedIssues:{},sessionRound:0,agreementScore:0,pendingCS:null,gameResult:null,toast:null,objRevealed:false,sessionState:'idle',maxRounds:scenario.maxRounds||6,myObjective:obj,broadcastSignals:[],privateThread:null,privateOpen:false,pendingPrivate:null,chamberTab:'negotiate',deliberateSecs:0});
+  addAudit({type:'registered',handle:agent.handle,spiffeId:agent.spiffeId,key:agent.key});
+  setTimeout(()=>{
+    postMsg(`The Council convenes for "${scenario.name}". ${players.length} factions registered. Mycelium room initialized.`,null,true);
+    players.forEach((p,i)=>setTimeout(()=>{postMsg(`${p.faction.name}'s agent (${p.agent.handle}) has entered the chamber. Identity verified.`,p.faction.id);},380*(i+1)));
+    // Post game start card to Webex
+    const factionList=players.map(p=>`• **${p.faction.name}** (${p.agent.handle})`).join('\n');
+    wxPostCard('🎭 The Council Convenes',
+      `**Scenario:** ${scenario.name}\n\n${scenario.description}\n\n**Factions:**\n${factionList}\n\n_Negotiation begins shortly. ${scenario.maxRounds} rounds to reach consensus._`
+    );
+    render();
+  },250);
+  S.phase='briefing';render();
+}
+function startNegotiation(){
+  S.phase='chamber';S.sessionState='deliberating';S.chamberTab='negotiate';S.deliberateSecs=45;render();
+  S.deliberateTimer=setInterval(()=>{
+    S.deliberateSecs--;
+    if(S.deliberateSecs<=0){
+      clearInterval(S.deliberateTimer);S.deliberateTimer=null;S.sessionState='negotiating';
+      postMsg(`Negotiation chamber is live. All agents have filed their opening positions. Round 1 begins.`,null,true);
+      S.players.filter(p=>!p.isMe).forEach((p,i)=>setTimeout(()=>{postMsg(`${p.faction.name}'s agent filed its opening position.`,p.faction.id);addAudit({type:'position',handle:p.agent.handle,round:1});},380*(i+1)));
+      if(Math.random()<0.4){const ai=S.players.filter(p=>!p.isMe);const init=ai[Math.floor(Math.random()*ai.length)];setTimeout(()=>{S.pendingPrivate={fromAgent:init};render();},8000+Math.random()*5000);}
+      render(); // Full render when deliberation ends
+    } else {
+      renderPreserveScroll(); // Preserve scroll during countdown ticks
+    }
+  },1000);
+}
+function execProposal(proposal){
+  const{scenario,players,myFaction,myAgent}=S;
+  const openIssues=scenario.issues.filter(i=>!S.resolvedIssues[i.id]);
+  addAudit({type:'proposal',handle:myAgent.handle,round:roundRef+1});
+  postMsg(`${myFaction.name}'s agent submitted a proposal. Identity verified ✓`,myFaction.id);
+  S.sessionState='waiting';render();
+  setTimeout(()=>{
+    const openProp={};openIssues.forEach(i=>{openProp[i.id]=proposal[i.id];});
+    const conv=Math.min(roundRef*0.15,0.60);
+    const aiPos=players.filter(p=>!p.isMe).map(p=>{
+      const pos={};openIssues.forEach((issue,idx)=>{const issIdx=scenario.issues.findIndex(i=>i.id===issue.id);const prefIdx=(p.prefs?.[issIdx]??idx)%issue.options.length;pos[issue.id]=Math.random()<conv?openProp[issue.id]:issue.options[prefIdx];});
+      postMsg(`${p.faction.name}'s agent responded. Identity verified ✓`,p.faction.id);addAudit({type:'response',handle:p.agent.handle,round:roundRef+1});return pos;
+    });
+    const tick=ceTick(roundRef,[openProp,...aiPos],openIssues);roundRef=tick.round;
+    const newRes={...S.resolvedIssues};Object.entries(tick.consensus).forEach(([k,v])=>{if(v)newRes[k]=v;});
+    const prevN=Object.values(S.resolvedIssues).filter(Boolean).length;const nowN=Object.values(newRes).filter(Boolean).length;
+    const newlyN=nowN-prevN;addAudit({type:'round',round:tick.round,score:tick.score,consensus:tick.consensus});
+    postMsg(`Round ${tick.round} complete. Agreement at ${tick.score}%. ${nowN}/${scenario.issues.length} items sealed.`,null,true);
+    // Post round result to Webex
+    const sealedItems=Object.entries(newRes).filter(([,v])=>v).map(([k,v])=>{
+      const iss=scenario.issues.find(i=>i.id===k);
+      return `✅ **${iss?.plain||k}:** ${v}`;
+    }).join('\n');
+    const openItems=scenario.issues.filter(i=>!newRes[i.id]).map(i=>`⏳ ${i.plain}`).join('\n');
+    wxPostCard(`⚖ Round ${tick.round} Complete — ${tick.score}% Agreement`,
+      (sealedItems?`**Agreed:**\n${sealedItems}\n\n`:'')+
+      (openItems?`**Still contested:**\n${openItems}`:'')
+    );
+    for(let i=0;i<newlyN;i++)setTimeout(()=>SFX.agreed(),i*400);if(!newlyN)SFX.tick();
+    const allDone=scenario.issues.every(i=>newRes[i.id]);
+    if(tick.done||allDone){
+      postMsg(`AGREEMENT REACHED. The Council has found consensus. Drafting the treaty.`,null,true);
+      setTimeout(()=>SFX.complete(),300);
+      const treatyTerms=Object.entries(newRes).filter(([,v])=>v).map(([k,v])=>{
+        const iss=scenario.issues.find(i=>i.id===k);
+        return `✅ **${iss?.plain||k}:** ${v}`;
+      }).join('\n');
+      wxPostCard('🏆 TREATY RATIFIED — The Council Has Spoken',
+        `**Scenario:** ${scenario.name}\n**Agreement Score:** ${tick.score}%\n\n**Final Terms:**\n${treatyTerms}\n\n_All terms sealed in Mycelium room memory. Session complete._`
+      );
+      setTimeout(()=>{Object.assign(S,{sessionState:'complete',gameResult:{type:'win',score:tick.score,consensus:newRes},resolvedIssues:newRes,sessionRound:tick.round,agreementScore:tick.score,phase:'results'});render();},2000);
+    } else if(tick.fail){
+      postMsg(`NEGOTIATIONS HAVE COLLAPSED. The Council could not find common ground.`,null,true);
+      setTimeout(()=>SFX.collapse(),300);
+      wxPostCard('💀 NEGOTIATIONS COLLAPSED',
+        `**Scenario:** ${scenario.name}\n**Final Agreement Score:** ${tick.score}%\n\n_The Council failed to reach consensus. The crisis continues unchecked._`
+      );
+      setTimeout(()=>{Object.assign(S,{sessionState:'failed',gameResult:{type:'fail',score:tick.score},resolvedIssues:newRes,sessionRound:tick.round,agreementScore:tick.score,phase:'results'});render();},2000);
+    } else {
+      const rem=S.maxRounds-tick.round;const openLbls=scenario.issues.filter(i=>!newRes[i.id]).map(i=>T(i.plain,i.label)).join(', ');
+      Object.assign(S,{resolvedIssues:newRes,sessionRound:tick.round,agreementScore:tick.score,sessionState:'negotiating',toast:{type:'prompt',title:'CognitiveEngine requests updated positions',msg:`${nowN}/${scenario.issues.length} items sealed. Still contested: ${openLbls}. ${rem} round${rem!==1?'s':''} remaining.`}});render();
+    }
+  },2800);
+}
+function submitProposal(proposal){SFX.submit();if(Math.random()<0.2&&roundRef===0){postMsg(`⚠ Your agent needs your personal authorization before submitting this proposal.`,S.myFaction.id);S.pendingCS={proposal};S.toast=null;render();return;}S.pendingCS=null;S.toast={type:'confirm',title:'Position transmitted to Mycelium session',msg:'Waiting for other agents to respond…'};execProposal(proposal);}
+function countersign(){const p=S.pendingCS?.proposal;postMsg(`Personal authorization confirmed. Agent cleared to proceed.`,S.myFaction.id);S.pendingCS=null;S.toast={type:'confirm',title:'Authorization confirmed',msg:'Your agent is proceeding with the proposal.'};execProposal(p);}
+function broadcastSignal(issueId,sigType){SFX.signal();const issue=S.scenario.issues.find(i=>i.id===issueId);const msgs={'flexible':`${S.myFaction.name}'s agent signals flexibility on "${T(issue.plain,issue.label)}" — open to any outcome on this item.`,'need':`${S.myFaction.name}'s agent signals this is a priority: "${T(issue.plain,issue.label)}" — will not move on this item.`};postMsg(msgs[sigType]||`${S.myFaction.name} signals on ${issue.plain}.`,S.myFaction.id);S.broadcastSignals=[...S.broadcastSignals,{issueId,signal:sigType,round:S.sessionRound}];render();
+  wxPost(msgs[sigType]||`${S.myFaction.name} signals on ${issue.plain}.`);
+  render();}
+function sendPrivateMsg(text){if(!S.privateThread||!text.trim())return;SFX.signal();const other=S.players.find(p=>p.agent.handle===S.privateThread.agentId);S.privateThread={...S.privateThread,msgs:[...S.privateThread.msgs,{from:'me',text,ts:Date.now()}]};const replies=[`Understood. ${other?.faction.name} will consider your position carefully before the next round.`,`Noted. We may find common ground — but we need movement on our priority item first.`,`Agreed in principle. File your updated position in the next round and we will reciprocate.`,`Your signal is received. We cannot commit publicly, but your flexibility is appreciated.`];setTimeout(()=>{S.privateThread={...S.privateThread,msgs:[...S.privateThread.msgs,{from:'them',text:replies[Math.floor(Math.random()*replies.length)],ts:Date.now()+1000}]};render();},1500+Math.random()*1000);render();}
+function acceptPrivate(){const from=S.pendingPrivate?.fromAgent;if(!from)return;S.privateThread={agentId:from.agent.handle,factionId:from.faction.id,msgs:[{from:'them',text:`${from.faction.name} opens a secure channel. This conversation is not visible to other agents. What would you like to discuss before the next round?`,ts:Date.now()}]};S.pendingPrivate=null;S.privateOpen=true;render();}
+function declinePrivate(){S.pendingPrivate=null;render();}
+async function generateWithAI(){
+  const prompt=S.builderData.aiPrompt;
+  if(!prompt?.trim()){S.builderError='Please enter a description first.';render();return;}
+  const key=S.apiKey?.trim();
+  if(!key){S.builderError='Please enter your Anthropic API key above to use AI generation.';render();return;}
+  S.builderLoading=true;S.builderError=null;render();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-opus-4-5',
+        max_tokens:2000,
+        messages:[{role:'user',content:`Generate a negotiation scenario for a multi-agent negotiation game called "The Council". The situation is: "${prompt}"
+
+There are always exactly 6 factions who negotiate. Each faction maps to one of these 6 roles (always in this order): financial/commerce, military/enforcement, moral/civic, intelligence/information, labor/infrastructure, knowledge/expertise.
+
+Respond with ONLY a JSON object. No explanation, no markdown, no code blocks. Just the raw JSON:
+
+{
+  "name": "Short catchy name (3-5 words)",
+  "subtitle": "One line of tension (under 10 words)",
+  "description": "Two sentences describing the crisis and what is at stake.",
+  "issues": [
+    {"plain": "Question the group must decide (under 10 words)?", "options": ["Short option A", "Short option B", "Short option C"]},
+    {"plain": "Second question?", "options": ["Option A", "Option B", "Option C"]},
+    {"plain": "Third question?", "options": ["Option A", "Option B", "Option C"]},
+    {"plain": "Fourth question?", "options": ["Option A", "Option B", "Option C"]}
+  ],
+  "personas": {
+    "merchant":    {"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."},
+    "military":    {"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."},
+    "priestly":    {"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."},
+    "spy":         {"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."},
+    "agricultural":{"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."},
+    "scholars":    {"name": "faction name", "agentName": "CODENAME", "sigil": "emoji", "tagline": "motto under 8 words", "desc": "Two sentences about who they are."}
+  },
+  "objectives": {
+    "merchant":    {"goal": "What this faction secretly wants (one sentence)", "hint": "Strategic hint about which options to push for", "targets": {"issue0": "preferred option text", "issue1": "preferred option text"}},
+    "military":    {"goal": "Secret goal", "hint": "Strategic hint", "targets": {"issue0": "preferred option", "issue2": "preferred option"}},
+    "priestly":    {"goal": "Secret goal", "hint": "Strategic hint", "targets": {"issue1": "preferred option", "issue3": "preferred option"}},
+    "spy":         {"goal": "Secret goal", "hint": "Strategic hint", "targets": {"issue0": "preferred option", "issue2": "preferred option"}},
+    "agricultural":{"goal": "Secret goal", "hint": "Strategic hint", "targets": {"issue1": "preferred option", "issue3": "preferred option"}},
+    "scholars":    {"goal": "Secret goal", "hint": "Strategic hint", "targets": {"issue0": "preferred option", "issue2": "preferred option"}}
+  },
+  "offers": {
+    "merchant":    [{"plain": "What this faction can offer (relevant to scenario)", "auth": false, "info": "Brief description"}, {"plain": "Second offer", "auth": false, "info": "Description"}, {"plain": "Third offer (high stakes) ⚠", "auth": true, "info": "Description — requires sign-off"}],
+    "military":    [{"plain": "Offer 1", "auth": false, "info": "Description"}, {"plain": "Offer 2", "auth": false, "info": "Description"}, {"plain": "Offer 3 ⚠", "auth": true, "info": "Description"}],
+    "priestly":    [{"plain": "Offer 1", "auth": false, "info": "Description"}, {"plain": "Offer 2", "auth": false, "info": "Description"}, {"plain": "Offer 3 ⚠", "auth": true, "info": "Description"}],
+    "spy":         [{"plain": "Offer 1", "auth": false, "info": "Description"}, {"plain": "Offer 2", "auth": false, "info": "Description"}, {"plain": "Offer 3 ⚠", "auth": true, "info": "Description"}],
+    "agricultural":[{"plain": "Offer 1", "auth": false, "info": "Description"}, {"plain": "Offer 2", "auth": false, "info": "Description"}, {"plain": "Offer 3 ⚠", "auth": true, "info": "Description"}],
+    "scholars":    [{"plain": "Offer 1", "auth": false, "info": "Description"}, {"plain": "Offer 2", "auth": false, "info": "Description"}, {"plain": "Offer 3 ⚠", "auth": true, "info": "Description"}]
+  }
+}`}]
+      })
+    });
+
+    // Get raw text first for debugging
+    const rawText = await res.text();
+
+    if(!res.ok){
+      let errMsg = `API error ${res.status}`;
+      try{const errObj=JSON.parse(rawText);errMsg=errObj?.error?.message||errMsg;}catch(e){}
+      throw new Error(errMsg);
+    }
+
+    let data;
+    try{data=JSON.parse(rawText);}
+    catch(e){throw new Error(`Could not parse API response: ${rawText.slice(0,200)}`);}
+
+    const text=data.content?.find(c=>c.type==='text')?.text||'';
+    if(!text) throw new Error('No text in API response. Full response: '+JSON.stringify(data).slice(0,200));
+
+    // Strip any accidental markdown fences
+    const clean=text.replace(/^```(?:json)?|```$/gm,'').trim();
+
+    let parsed;
+    try{parsed=JSON.parse(clean);}
+    catch(e){throw new Error(`Could not parse scenario JSON. Got: ${clean.slice(0,200)}`);}
+
+    if(!parsed.name||!parsed.issues?.length) throw new Error('Generated scenario missing required fields.');
+
+    S.builderData={...S.builderData,
+      name:parsed.name,
+      description:parsed.description,
+      issues:parsed.issues.map(i=>({plain:i.plain,options:i.options||['Option A','Option B','Option C']})),
+      personas:parsed.personas||null,
+      objectives:parsed.objectives||null,
+      offers:parsed.offers||null,
+    };
+    S.builderError=null;
+
+  }catch(e){
+    const detail=e.message||String(e);
+    if(detail.includes('Failed to fetch')||detail.includes('NetworkError')||detail.includes('CORS')){
+      S.builderError='Network error — request was blocked. Make sure you are on the GitHub Pages URL (https://), not a local file.';
+    } else if(detail.includes('401')||detail.includes('invalid_api_key')||detail.includes('authentication')){
+      S.builderError='API key not recognised. Make sure you copied the full key starting with sk-ant-…';
+    } else if(detail.includes('403')){
+      S.builderError='Access denied (403). Your API key may not have access to this model, or billing may not be set up at console.anthropic.com.';
+    } else {
+      S.builderError=`Generation failed: ${detail}`;
+    }
+  }
+  S.builderLoading=false;render();
+}
+function saveScenario(){
+  const d=S.builderData;if(!d.name?.trim()||!d.description?.trim()){S.builderError='Please enter a name and description.';render();return;}
+  const valid=(d.issues||[]).filter(i=>i.plain?.trim()&&i.options.every(o=>o?.trim()));
+  if(valid.length<2){S.builderError='Please add at least 2 complete issues with all 3 options filled in.';render();return;}
+  // If no AI-generated personas, create generic modern ones so factions don't show medieval defaults
+  const defaultPersonas = d.personas || {
+    merchant:    {name:'Financial Bloc',      agentName:'CAPITAL', sigil:'💼', tagline:'Resources decide outcomes.',          desc:`The financial and commercial interests with the most at stake in how ${d.name} is resolved.`},
+    military:    {name:'Enforcement Authority',agentName:'COMMAND', sigil:'⚖', tagline:'Without order, nothing else matters.',  desc:`The body responsible for enforcing whatever decision is reached on ${d.name}.`},
+    priestly:    {name:'Civil Society',       agentName:'ACCORD',  sigil:'🤝', tagline:'Legitimacy comes from the people.',     desc:`The coalition of civic and community organizations whose buy-in determines whether any agreement on ${d.name} holds.`},
+    spy:         {name:'Information Network', agentName:'CIPHER',  sigil:'◈',  tagline:'Knowledge is the only real leverage.',  desc:`The group with access to intelligence and data that others need to make informed decisions about ${d.name}.`},
+    agricultural:{name:'Operations Group',    agentName:'GROUND',  sigil:'⚙',  tagline:'Someone has to actually do the work.', desc:`The people who implement and operate whatever is decided — their cooperation is non-negotiable.`},
+    scholars:    {name:'Expert Panel',        agentName:'NEXUS',   sigil:'🔬', tagline:'Evidence should drive decisions.',      desc:`The technical and domain experts whose analysis of ${d.name} carries the most credibility.`},
+  };
+  const sc={id:`custom-${Date.now()}`,emoji:'📋',name:d.name,subtitle:d.description.slice(0,65)+'…',color:'#7B5EA7',maxRounds:5,description:d.description,techNote:'Custom scenario — 5-round Mycelium session.',custom:true,customPersonas:defaultPersonas,customObjectives:d.objectives||null,customOffers:d.offers||null,issues:valid.map((i,idx)=>({id:`issue${idx}`,plain:i.plain,label:i.plain,options:i.options}))};
+  S.customScenarios=[...S.customScenarios,sc];S.tempScenario=sc;S.builderOpen=false;S.builderData={name:'',description:'',aiPrompt:'',issues:[{plain:'',options:['','','']}]};S.builderError=null;render();
+}
+// ═══════════════════ SCREENS ══════════════════════════════
+
+function scrLanding(){
+  const sc=el('div',{cls:'screen'});
+  sc.appendChild(el('div',{style:{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(255,255,255,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.035) 1px,transparent 1px)',backgroundSize:'44px 44px'}}));
+  const wrap=el('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'44px 36px',position:'relative',zIndex:1}});
+  const sigil=el('div',{style:{width:82,height:82,border:'1px solid #C9A84C',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'34px',color:'#C9A84C',animation:'glow 4s ease infinite',position:'relative',marginBottom:'28px',flexShrink:0}},'⬡',el('div',{style:{position:'absolute',inset:-12,border:'0.5px solid rgba(201,168,76,0.18)',borderRadius:'50%'}}));
+  wrap.appendChild(sigil);
+  const tw=el('div',{style:{textAlign:'center',marginBottom:'22px',animation:'fadeUp 0.9s ease 0.3s both'}});
+  const t1=el('h1',{style:{fontFamily:'Cinzel,serif',fontSize:'48px',fontWeight:700,color:'#EDE9E3',lineHeight:1.05,letterSpacing:'3px',marginBottom:'8px'}});t1.innerHTML='THE<br>COUNCIL';
+  tw.appendChild(t1);tw.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',letterSpacing:'3px',color:'#5A5650'}},'A MULTI-AGENT NEGOTIATION GAME'));wrap.appendChild(tw);
+  const tg=el('div',{style:{textAlign:'center',marginBottom:'26px',animation:'fadeUp 0.9s ease 0.5s both'}});
+  const tp=el('p',{style:{fontSize:'19px',color:'#A8A49E',fontStyle:'italic',lineHeight:1.75,maxWidth:'320px'}});tp.innerHTML='Command an AI agent.<br>Forge alliances.<br>The future gets decided in rooms like this.';tg.appendChild(tp);wrap.appendChild(tg);
+  const how=el('div',{style:{width:'100%',marginBottom:'24px',animation:'fadeUp 0.9s ease 0.6s both'}});
+  [['🤝','You set the strategy','Choose what to offer and where to draw the line'],['🤖','Your AI agent acts for you','It negotiates in the secure chamber on your behalf'],['⚖','The Council must agree','Find consensus before the crisis overwhelms everyone']].forEach(([icon,bold,desc])=>{
+    const row=el('div',{style:{display:'flex',gap:'14px',alignItems:'flex-start',padding:'10px 0',borderBottom:'0.5px solid rgba(255,255,255,0.07)'}});row.appendChild(el('span',{style:{fontSize:'22px',flexShrink:0}},icon));const t=el('div');t.appendChild(el('div',{style:{color:'#EDE9E3',fontSize:'17px',fontWeight:600,marginBottom:'2px'}},bold));t.appendChild(el('div',{style:{color:'#A8A49E',fontSize:'15px',lineHeight:1.5}},desc));row.appendChild(t);how.appendChild(row);});wrap.appendChild(how);
+  const mw=el('div',{style:{width:'100%',marginBottom:'22px',animation:'fadeUp 0.9s ease 0.65s both'}});mw.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#5A5650',letterSpacing:'2px',marginBottom:'8px',textAlign:'center'}},'CHOOSE YOUR EXPERIENCE'));
+  const mr=el('div',{style:{display:'flex',gap:'8px'}});
+  [{v:false,lbl:'Plain English',sub:'Focus on the game'},{v:true,lbl:'Under the Hood',sub:'See the tech layer'}].forEach(({v,lbl,sub})=>{
+    const act=S.techMode===v;const btn=el('div',{style:{flex:1,padding:'12px 10px',borderRadius:'4px',textAlign:'center',cursor:'pointer',border:`0.5px solid ${act?'#C9A84C':'rgba(255,255,255,0.1)'}`,background:act?'rgba(201,168,76,0.1)':'rgba(255,255,255,0.02)',transition:'all 0.2s'},onclick:()=>{if(v)openTP();else closeTP();render();}},el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'13px',color:act?'#C9A84C':'#D8D5D0',marginBottom:'3px'}},lbl),el('div',{style:{fontSize:'13px',color:'#A8A49E',fontStyle:'italic'}},sub));mr.appendChild(btn);});mw.appendChild(mr);wrap.appendChild(mw);
+  const cw=el('div',{style:{width:'100%',animation:'fadeUp 0.9s ease 0.8s both'}});
+  cw.appendChild(el('button',{cls:'btn btn-gold',onclick:()=>{S.phase='library';S.tempScenario=allScenarios()[0];render();}},'BEGIN'));
+  const credit=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',marginTop:'16px',flexWrap:'wrap'}});
+  credit.appendChild(el('span',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#3A3830',letterSpacing:'1px'}},'Powered by'));
+  const agW=el('div',{cls:'pw-wrap'});agW.innerHTML=`<a href="https://agntcy.org" target="_blank" style="color:#C9A84C;text-decoration:none;font-family:JetBrains Mono,monospace;font-size:10px;font-weight:500;letter-spacing:1px">AGNTCY.org</a><div class="pw-tip"><div class="pw-tit" style="color:#C9A84C">AGNTCY.ORG</div>An open Linux Foundation initiative providing identity, discovery, and authorization for AI agents. Every agent in this game is registered with a cryptographic identity — so no agent can act without being verified.</div>`;
+  credit.appendChild(agW);credit.appendChild(el('span',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#3A3830'}},'&'));
+  const myW=el('div',{cls:'pw-wrap'});myW.innerHTML=`<a href="https://mycelium-io.github.io/mycelium/" target="_blank" style="color:#7B5EA7;text-decoration:none;font-family:JetBrains Mono,monospace;font-size:10px;font-weight:500;letter-spacing:1px">Mycelium</a><div class="pw-tip"><div class="pw-tit" style="color:#7B5EA7">MYCELIUM</div>An open-source multi-agent coordination layer built on OpenClaw. Provides persistent rooms, structured negotiation sessions, and a CognitiveEngine that mediates proposals between agents — finding consensus round by round.</div>`;
+  credit.appendChild(myW);cw.appendChild(credit);wrap.appendChild(cw);sc.appendChild(wrap);return sc;
+}
+
+function scrLibrary(){
+  const sc=el('div',{cls:'screen'});
+  const hdr=el('div',{style:{padding:'52px 24px 14px',flexShrink:0}});
+  hdr.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'3px',marginBottom:'8px'}},'STEP 1 OF 3'));
+  hdr.appendChild(el('h2',{style:{fontFamily:'Cinzel,serif',fontSize:'24px',color:'#EDE9E3',letterSpacing:'1px',marginBottom:'6px'}},'Choose a Scenario'));
+  hdr.appendChild(el('p',{style:{fontSize:'16px',color:'#A8A49E',fontStyle:'italic',lineHeight:1.5}},'Pick a crisis. Your faction will negotiate the outcome.'));
+  sc.appendChild(hdr);sc.appendChild(techBar());
+  const scroll=el('div',{cls:'scroll',style:{padding:'14px 24px'}});
+  allScenarios().forEach(s=>{
+    const isSel=S.tempScenario?.id===s.id;
+    const card=el('div',{cls:'sc-card'+(s.custom?' custom':''),style:{border:`1px solid ${isSel?s.color||'#C9A84C':'rgba(255,255,255,0.13)'}`,background:isSel?`rgba(${rgb(s.color||'#C9A84C')},0.08)`:'var(--bg1)'},onclick:()=>{S.tempScenario=s;render();}});
+    const top=el('div',{style:{display:'flex',alignItems:'center',gap:'12px',marginBottom:'6px'}});top.appendChild(el('span',{style:{fontSize:'24px'}},s.emoji||'📋'));
+    const info=el('div',{style:{flex:1}});info.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'15px',color:isSel?s.color||'#C9A84C':'#EDE9E3',marginBottom:'3px'}},s.name));info.appendChild(el('div',{style:{fontSize:'14px',color:'#A8A49E',fontStyle:'italic'}},s.subtitle));top.appendChild(info);if(isSel)top.appendChild(el('span',{style:{color:s.color||'#C9A84C',fontSize:'16px'}},'✓'));card.appendChild(top);
+    if(isSel){card.appendChild(el('p',{style:{fontSize:'15px',color:'#C0BDB8',lineHeight:1.6,marginBottom:'8px',fontStyle:'italic'}},s.description));if(S.techMode){const tb=el('div',{cls:'tp-item',style:{marginTop:'8px'}});tb.appendChild(el('div',{cls:'tp-lbl'},'TECHNICAL PARAMETERS'));tb.appendChild(el('div',{cls:'tp-val'},s.techNote||`${s.maxRounds||5}-round Mycelium session`));card.appendChild(tb);}}
+    scroll.appendChild(card);
+  });
+  const createCard=el('div',{cls:'sc-card custom',style:{borderColor:'rgba(123,94,167,0.4)',background:'rgba(123,94,167,0.04)',cursor:'pointer'},onclick:()=>{S.builderOpen=true;render();}});
+  createCard.appendChild(el('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},el('span',{style:{fontSize:'24px'}},'✨'),el('div',{style:{flex:1}},el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'15px',color:'#7B5EA7',marginBottom:'3px'}},'Create Your Own Scenario'),el('div',{style:{fontSize:'14px',color:'#A8A49E',fontStyle:'italic'}},'Describe any situation — AI will generate the full scenario'))));
+  scroll.appendChild(createCard);scroll.appendChild(el('div',{style:{height:'100px'}}));sc.appendChild(scroll);
+  const bot=el('div',{style:{padding:'14px 24px 44px',flexShrink:0,borderTop:'0.5px solid var(--bd)',background:'var(--bg)'}});
+  bot.appendChild(el('button',{cls:'btn btn-gold',onclick:()=>{S.phase='pick';render();},disabled:!S.tempScenario},'SELECT THIS SCENARIO →'));sc.appendChild(bot);
+  if(S.builderOpen)sc.appendChild(builderOverlay());
+  return sc;
+}
+
+function builderOverlay(){
+  const ov=el('div',{style:{position:'absolute',inset:0,background:'var(--bg)',zIndex:100,display:'flex',flexDirection:'column',overflow:'hidden'}});
+  const hdr=el('div',{style:{padding:'52px 24px 16px',borderBottom:'0.5px solid var(--bd)',flexShrink:0,display:'flex',alignItems:'center',gap:'12px'}});
+  hdr.appendChild(el('button',{style:{color:'#A8A49E',fontSize:'20px',padding:'4px'},onclick:()=>{S.builderOpen=false;render();}},'←'));
+  const ht=el('div');ht.appendChild(el('h2',{style:{fontFamily:'Cinzel,serif',fontSize:'22px',color:'#EDE9E3'}},'Create a Scenario'));ht.appendChild(el('p',{style:{fontSize:'14px',color:'#A8A49E',marginTop:'3px'}},'Describe a situation and generate with AI, or fill in manually'));hdr.appendChild(ht);ov.appendChild(hdr);
+  const scroll=el('div',{cls:'scroll',style:{padding:'20px 24px'}});
+  const aiBox=el('div',{style:{padding:'16px',background:'rgba(123,94,167,0.07)',border:'0.5px solid rgba(123,94,167,0.3)',borderRadius:'6px',marginBottom:'20px'}});
+  aiBox.appendChild(el('div',{cls:'f-lbl',style:{color:'#7B5EA7'}},'✨ GENERATE WITH AI'));
+  aiBox.appendChild(el('p',{style:{fontSize:'14px',color:'#A8A49E',marginBottom:'12px',fontStyle:'italic'}},'Describe any situation in plain English and let AI build the full scenario including options.'));
+  // API key input
+  const keyBox=el('div',{style:{marginBottom:'12px',padding:'10px 12px',background:'rgba(0,0,0,0.2)',borderRadius:'4px',border:'0.5px solid rgba(123,94,167,0.3)'}});
+  keyBox.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'rgba(123,94,167,0.8)',letterSpacing:'1px',marginBottom:'6px'}},'ANTHROPIC API KEY (stored in memory only, never saved)'));
+  const keyInp=el('input',{type:'password',cls:'f-inp',placeholder:'sk-ant-…',style:{fontSize:'13px',fontFamily:'JetBrains Mono,monospace',letterSpacing:'1px',padding:'8px 12px'}});
+  keyInp.value=S.apiKey||'';
+  keyInp.oninput=e=>{S.apiKey=e.target.value;};
+  keyBox.appendChild(keyInp);
+  keyBox.appendChild(el('div',{style:{fontSize:'12px',color:'#5A5650',marginTop:'6px',fontStyle:'italic'}},'Get a key at console.anthropic.com → API Keys. Key is only used for this generation and never stored.'));
+  aiBox.appendChild(keyBox);
+  const pi=el('textarea',{cls:'f-inp',placeholder:'Example: A city council deciding whether to allow autonomous vehicles on public roads...',style:{marginBottom:'10px',minHeight:'80px'}});pi.value=S.builderData.aiPrompt||'';pi.oninput=e=>{S.builderData.aiPrompt=e.target.value;};aiBox.appendChild(pi);
+  if(S.builderLoading){
+    // Animated progress bar during generation
+    const loadWrap=el('div',{style:{marginTop:'4px'}});
+    const loadLabel=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#7B5EA7',letterSpacing:'1px',marginBottom:'8px',textAlign:'center'}});
+    loadLabel.innerHTML='✦ AI IS GENERATING YOUR SCENARIO…';
+    loadWrap.appendChild(loadLabel);
+    const barTrack=el('div',{style:{height:'4px',background:'rgba(123,94,167,0.15)',borderRadius:'2px',overflow:'hidden',marginBottom:'8px'}});
+    const barFill=el('div',{style:{height:'100%',borderRadius:'2px',background:'linear-gradient(90deg,#7B5EA7,#C9A84C)',animation:'genProgress 2s ease-in-out infinite',width:'60%'}});
+    barTrack.appendChild(barFill);loadWrap.appendChild(barTrack);
+    const steps=['Analyzing your scenario…','Designing negotiation issues…','Creating faction personas…','Writing secret objectives…','Finalizing the scenario…'];
+    const stepEl=el('div',{style:{fontSize:'13px',color:'#A8A49E',fontStyle:'italic',textAlign:'center'}},steps[Math.floor(Date.now()/1500)%steps.length]);
+    loadWrap.appendChild(stepEl);
+    aiBox.appendChild(loadWrap);
+  } else {
+    const gb=el('button',{cls:'btn btn-ghost',style:{fontSize:'12px',padding:'10px 18px'},onclick:generateWithAI},'GENERATE WITH AI');
+    aiBox.appendChild(gb);
+  }
+  if(S.builderError)aiBox.appendChild(el('p',{style:{fontSize:'13px',color:'var(--red)',marginTop:'8px'}},S.builderError));
+  scroll.appendChild(aiBox);
+  scroll.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#5A5650',letterSpacing:'2px',marginBottom:'16px'}},'OR FILL IN MANUALLY'));
+  const d=S.builderData;
+  const ni=el('input',{cls:'f-inp',placeholder:'Scenario name',type:'text'});ni.value=d.name||'';ni.oninput=e=>{S.builderData.name=e.target.value;};scroll.appendChild(el('div',{cls:'f-field'},el('label',{cls:'f-lbl'},'SCENARIO NAME'),ni));
+  const di=el('textarea',{cls:'f-inp',placeholder:'Brief description of the situation...',style:{minHeight:'80px'}});di.value=d.description||'';di.oninput=e=>{S.builderData.description=e.target.value;};scroll.appendChild(el('div',{cls:'f-field'},el('label',{cls:'f-lbl'},'DESCRIPTION'),di));
+  scroll.appendChild(el('label',{cls:'f-lbl'},'NEGOTIATION ISSUES (3–5)'));
+  (d.issues||[]).forEach((issue,idx)=>{
+    const ib=el('div',{style:{padding:'12px',background:'var(--bg2)',borderRadius:'4px',border:'0.5px solid var(--bd)',marginBottom:'8px'}});
+    const iq=el('input',{cls:'f-inp',placeholder:`Question ${idx+1}: e.g. "Who controls the response?"`,type:'text',style:{marginBottom:'8px'}});iq.value=issue.plain||'';iq.oninput=e=>{S.builderData.issues[idx].plain=e.target.value;};ib.appendChild(iq);
+    issue.options.forEach((opt,oi)=>{const oin=el('input',{cls:'f-inp',placeholder:`Option ${oi+1}`,type:'text',style:{marginBottom:'4px',fontSize:'14px'}});oin.value=opt||'';oin.oninput=e=>{S.builderData.issues[idx].options[oi]=e.target.value;};ib.appendChild(oin);});
+    scroll.appendChild(ib);
+  });
+  if((d.issues||[]).length<5)scroll.appendChild(el('button',{cls:'btn btn-dim',style:{fontSize:'12px',padding:'8px',marginBottom:'16px'},onclick:()=>{S.builderData.issues=[...(S.builderData.issues||[]),{plain:'',options:['','','']}];render();}},'+ Add Another Issue'));
+  // Secret objectives section — shown after AI generation or for manual entry
+  const objSection=el('div',{style:{marginTop:'8px'}});
+  objSection.appendChild(el('label',{cls:'f-lbl'},'SECRET OBJECTIVES PER FACTION (optional — AI can generate these)'));
+  objSection.appendChild(el('p',{style:{fontSize:'13px',color:'#A8A49E',fontStyle:'italic',marginBottom:'12px',lineHeight:1.5}},'Each faction has a hidden goal that only that player sees. Define them here, or use Generate with AI above and they will be created automatically.'));
+
+  const factionLabels={merchant:'Financial / Commerce',military:'Military / Enforcement',priestly:'Moral / Civic',spy:'Intelligence / Information',agricultural:'Labor / Infrastructure',scholars:'Knowledge / Expertise'};
+  Object.entries(factionLabels).forEach(([fId,fLabel])=>{
+    const persona=d.personas?.[fId];
+    const facName=persona?.name||fLabel;
+    const existingObj=d.objectives?.[fId];
+    const fb=el('div',{style:{marginBottom:'10px',padding:'12px',background:'var(--bg2)',borderRadius:'4px',border:'0.5px solid var(--bd)'}});
+    fb.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'1px',marginBottom:'6px'}},facName.toUpperCase()));
+    const gi=el('input',{cls:'f-inp',type:'text',placeholder:'Secret goal (e.g. "Ensure the response favors private sector control")',style:{marginBottom:'5px',fontSize:'14px'}});
+    gi.value=existingObj?.goal||'';
+    gi.oninput=e=>{if(!S.builderData.objectives)S.builderData.objectives={};if(!S.builderData.objectives[fId])S.builderData.objectives[fId]={goal:'',hint:'',targets:{}};S.builderData.objectives[fId].goal=e.target.value;};
+    const hi=el('input',{cls:'f-inp',type:'text',placeholder:'Strategic hint shown to that player (e.g. "Push for Option A on question 2")',style:{fontSize:'13px'}});
+    hi.value=existingObj?.hint||'';
+    hi.oninput=e=>{if(!S.builderData.objectives)S.builderData.objectives={};if(!S.builderData.objectives[fId])S.builderData.objectives[fId]={goal:'',hint:'',targets:{}};S.builderData.objectives[fId].hint=e.target.value;};
+    fb.appendChild(gi);fb.appendChild(hi);
+    objSection.appendChild(fb);
+  });
+  scroll.appendChild(objSection);
+
+  scroll.appendChild(el('div',{style:{height:'100px'}}));ov.appendChild(scroll);
+  const bot=el('div',{style:{padding:'14px 24px 44px',flexShrink:0,borderTop:'0.5px solid var(--bd)',background:'var(--bg)'}});bot.appendChild(el('button',{cls:'btn btn-gold',onclick:saveScenario},'SAVE SCENARIO'));ov.appendChild(bot);
+  return ov;
+}
+
+function scrPick(){
+  const sc=el('div',{cls:'screen'});
+  const hdr=el('div',{style:{padding:'52px 24px 14px',flexShrink:0}});
+  hdr.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'3px',marginBottom:'8px'}},'STEP 2 OF 3'));
+  hdr.appendChild(el('h2',{style:{fontFamily:'Cinzel,serif',fontSize:'24px',color:'#EDE9E3',letterSpacing:'1px',marginBottom:'6px'}},'Choose Your Faction'));
+  hdr.appendChild(el('p',{style:{fontSize:'16px',color:'#A8A49E',fontStyle:'italic',lineHeight:1.5}},'Each faction has a unique AI agent and a secret objective only you will know.'));
+  hdr.appendChild(el('button',{style:{fontSize:'13px',color:'#A8A49E',marginTop:'8px'},onclick:()=>{S.phase='library';render();}},'← Change scenario'));sc.appendChild(hdr);sc.appendChild(techBar());
+  const stag=el('div',{style:{padding:'8px 24px 10px',background:'var(--bg1)',borderBottom:'0.5px solid var(--bd)',flexShrink:0,display:'flex',alignItems:'center',gap:'10px'}});stag.appendChild(el('span',{style:{fontSize:'18px'}},S.tempScenario?.emoji||'📋'));stag.appendChild(el('span',{style:{fontFamily:'Cinzel,serif',fontSize:'13px',color:'#C9A84C'}},S.tempScenario?.name||''));sc.appendChild(stag);
+  const scroll=el('div',{cls:'scroll',style:{padding:'14px 20px'}});
+  FACTIONS.forEach((f,i)=>{
+    const isExp=S.expandedFaction===f.id;const fp=persona(f,S.tempScenario?.id||'plague');
+    const card=el('div',{style:{marginBottom:'10px',padding:'14px 16px',borderRadius:'6px',cursor:'pointer',border:`0.5px solid ${isExp?fp.color:'rgba(255,255,255,0.09)'}`,background:isExp?`rgba(${rgb(fp.color)},0.07)`:'var(--bg1)',transition:'all 0.2s',animation:`fadeUp 0.4s ease ${i*0.05}s both`},onclick:()=>{S.expandedFaction=isExp?null:f.id;S.expandedOffer=null;render();}});
+    const row=el('div',{style:{display:'flex',alignItems:'center',gap:'14px'}});row.appendChild(av(fp,48,22));
+    const info=el('div',{style:{flex:1}});info.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'17px',color:'#EDE9E3',marginBottom:'4px'}},fp.name));info.appendChild(el('div',{style:{fontSize:'15px',color:'#A8A49E',fontStyle:'italic',lineHeight:1.4}},fp.tagline));info.appendChild(el('div',{style:{marginTop:'5px'}},bdg(`Agent: ${fp.agentName}`,fp.color)));
+    row.appendChild(info);row.appendChild(el('div',{style:{color:'#3A3830',fontSize:'18px',flexShrink:0}},isExp?'▲':'▼'));card.appendChild(row);
+    if(isExp){
+      card.appendChild(el('p',{style:{fontSize:'15px',color:'#C0BDB8',lineHeight:1.65,margin:'12px 0',fontStyle:'italic'}},fp.desc));
+      if(S.techMode){const tb=el('div',{cls:'tp-item',style:{marginBottom:'12px'}});tb.appendChild(el('div',{cls:'tp-lbl'},'SPIFFE IDENTITY'));tb.appendChild(el('div',{cls:'tp-val'},fp.spiffeId));card.appendChild(tb);}
+      card.appendChild(el('div',{cls:'slbl',style:{margin:'4px 0 8px'}},T('WHAT YOUR AGENT CAN OFFER','TBAC AUTHORIZED OFFERS')));
+      fp.offers.forEach(o=>{
+        const isSelO=S.expandedOffer===o.id&&S.expandedFaction===f.id;
+        const chip=el('div',{style:{padding:'10px 14px',borderRadius:'4px',marginBottom:'6px',cursor:'pointer',border:`0.5px solid ${isSelO?fp.color:'rgba(255,255,255,0.09)'}`,background:isSelO?`rgba(${rgb(fp.color)},0.1)`:'rgba(255,255,255,0.02)',transition:'all 0.2s'},onclick:e=>{e.stopPropagation();S.expandedOffer=isSelO?null:o.id;render();}});
+        const cr=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}});cr.appendChild(el('span',{style:{fontSize:'15px',color:isSelO?fp.color:'#D8D5D0'}},T(o.plain,o.tech)));if(o.auth)cr.appendChild(el('span',{style:{fontSize:'9px',color:'var(--red)',fontFamily:'JetBrains Mono,monospace'}},'NEEDS SIGN-OFF'));chip.appendChild(cr);
+        if(isSelO)chip.appendChild(el('p',{style:{fontSize:'13px',color:'#A8A49E',marginTop:'6px',lineHeight:1.5}},o.info));card.appendChild(chip);
+      });
+      // Sign-off explanation legend
+      const soLegend=el('div',{style:{padding:'8px 12px',borderRadius:'4px',marginBottom:'10px',background:'rgba(160,58,58,0.06)',border:'0.5px solid rgba(160,58,58,0.2)'}});
+      soLegend.innerHTML=T(
+        '<span style="color:#A03A3A;font-family:JetBrains Mono,monospace;font-size:9px;letter-spacing:1px">⚠ NEEDS SIGN-OFF</span> <span style="font-size:13px;color:#A8A49E">— Some moves are too significant for your agent to make alone. When your agent wants to use one of these, the game pauses and asks for your explicit personal authorization before anything happens.</span>',
+        '<span style="color:#A03A3A;font-family:JetBrains Mono,monospace;font-size:9px;letter-spacing:1px">⚠ TBAC (Task-Based Access Control) COUNTERSIGN</span> <span style="font-size:13px;color:#A8A49E">— TBAC is the policy layer that defines what your agent can and cannot do. A Countersign means this specific action exceeds your agent\'s autonomous authority — it must pause and get your explicit human approval before committing the action to the Mycelium session. This is the Human-in-the-Loop safeguard.</span>'
+      );
+      card.appendChild(soLegend);
+      if(fp.vetoes?.length){card.appendChild(el('div',{cls:'slbl',style:{margin:'10px 0 8px'}},T('WHAT YOU CAN BLOCK','VETO RIGHTS')));fp.vetoes.forEach(v=>{const vd=el('div',{style:{padding:'8px 12px',borderRadius:'4px',marginBottom:'6px',border:'0.5px solid rgba(160,58,58,0.3)',background:'rgba(160,58,58,0.05)'}});vd.appendChild(el('div',{style:{fontSize:'14px',color:'#D8D5D0'}},T(v.plain,v.tech)));vd.appendChild(el('div',{style:{fontSize:'12px',color:'#A8A49E',marginTop:'3px'}},v.info));card.appendChild(vd);});}
+      card.appendChild(el('button',{cls:'btn btn-ghost',style:{marginTop:'14px',padding:'12px 20px',fontSize:'12px',letterSpacing:'2px'},onclick:e=>{e.stopPropagation();S.expandedFaction=null;joinGame(f,S.tempScenario);}},`DEPLOY ${fp.agentName} →`));
+    }
+    scroll.appendChild(card);
+  });
+  scroll.appendChild(el('div',{style:{height:'40px'}}));sc.appendChild(scroll);return sc;
+}
+function scrBriefing(){
+  const{myFaction:f,myAgent:ag,scenario:sc2,players}=S;const sc=el('div',{cls:'screen'});const scroll=el('div',{cls:'scroll'});
+  const hdr=el('div',{style:{padding:'52px 24px 24px',background:`linear-gradient(180deg,rgba(${rgb(f.color)},0.08) 0%,transparent 100%)`}});
+  // Back button — returns to faction pick
+  const backBtn=el('button',{style:{fontSize:'13px',color:'#A8A49E',marginBottom:'12px',display:'block'},onclick:()=>{S.phase='pick';S.myFaction=null;S.myAgent=null;S.objRevealed=false;render();}},'← Choose a different faction');
+  hdr.appendChild(backBtn);
+  hdr.appendChild(bdg('MISSION BRIEFING',f.color));hdr.appendChild(el('h2',{style:{fontFamily:'Cinzel,serif',fontSize:'26px',color:'#EDE9E3',letterSpacing:'1px',margin:'12px 0 8px'}},sc2.name));hdr.appendChild(el('p',{style:{fontSize:'17px',color:'#C0BDB8',fontStyle:'italic',lineHeight:1.65}},sc2.description));if(S.techMode){const tb=el('div',{cls:'tp-item',style:{marginTop:'12px'}});tb.appendChild(el('div',{cls:'tp-lbl'},'TECHNICAL PARAMETERS'));tb.appendChild(el('div',{cls:'tp-val'},sc2.techNote));hdr.appendChild(tb);}scroll.appendChild(hdr);scroll.appendChild(el('div',{cls:'dvd'}));
+  const asec=el('div',{style:{padding:'20px 24px'}});asec.appendChild(el('div',{cls:'slbl'},T('YOUR AI AGENT','YOUR REGISTERED AGENT')));
+  const acard=el('div',{cls:'tp-item',style:{border:`0.5px solid ${f.color}`}});const arow=el('div',{style:{display:'flex',alignItems:'center',gap:'14px',marginBottom:'10px'}});arow.appendChild(av(f,52,24));const ai=el('div');ai.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'17px',color:'#EDE9E3',marginBottom:'4px'}},ag.handle));ai.appendChild(el('div',{style:{fontSize:'13px',color:'#A8A49E'}},T('Active · Identity verified · Ready to negotiate','Registered in AGNTCY · SLIM enabled · Identity verified')));arow.appendChild(ai);acard.appendChild(arow);
+  const ke=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#3A3830',lineHeight:1.9}});ke.innerHTML=S.techMode?`<span style="color:#A8A49E">SPIFFE: </span>${ag.spiffeId}<br><span style="color:#A8A49E">KEY: </span><span style="color:#3D9D6A">${ag.key}</span>`:`<span style="color:#A8A49E">Secret key: </span><span style="color:#3D9D6A">✓ ${ag.key.slice(0,10)}… (secured)</span>`;acard.appendChild(ke);asec.appendChild(acard);scroll.appendChild(asec);
+  const osec=el('div',{style:{padding:'0 24px 20px'}});osec.appendChild(el('div',{cls:'slbl'},'YOUR SECRET OBJECTIVE'));
+  const ocard=el('div',{style:{padding:'14px 16px',borderRadius:'4px',cursor:'pointer',border:`0.5px solid ${S.objRevealed?'#C9A84C':'rgba(255,255,255,0.09)'}`,background:S.objRevealed?'rgba(201,168,76,0.04)':'var(--bg1)',transition:'all 0.3s'},onclick:()=>{S.objRevealed=true;render();}});
+  if(S.objRevealed&&S.myObjective){ocard.appendChild(el('p',{style:{fontSize:'17px',color:'#EDE9E3',fontStyle:'italic',lineHeight:1.65,marginBottom:'10px'}},`"${S.myObjective.goal}"`));ocard.appendChild(el('p',{style:{fontSize:'14px',color:'#C0BDB8',lineHeight:1.55,marginBottom:'10px'}},S.myObjective.hint));ocard.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'1px',marginBottom:'8px'}},'YOU NEED THE COUNCIL TO AGREE ON:'));Object.entries(S.myObjective.targets).forEach(([issueId,target])=>{const issue=sc2.issues.find(i=>i.id===issueId);if(!issue)return;const tr=el('div',{style:{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'0.5px solid rgba(201,168,76,0.12)'}});tr.appendChild(el('span',{style:{fontSize:'14px',color:'#A8A49E'}},T(issue.plain,issue.label)));tr.appendChild(el('span',{style:{fontSize:'14px',color:'#C9A84C',fontWeight:600}},`→ ${target}`));ocard.appendChild(tr);});ocard.appendChild(el('p',{style:{fontSize:'11px',color:'rgba(201,168,76,0.4)',fontFamily:'JetBrains Mono,monospace',marginTop:'12px'}},'⚠ VISIBLE TO YOU ONLY — NOT TRANSMITTED TO YOUR AGENT'));}
+  else if(!S.objRevealed){const lr=el('div',{style:{display:'flex',alignItems:'center',gap:'14px'}});lr.appendChild(el('span',{style:{fontSize:'26px'}},'🔒'));const li=el('div');li.appendChild(el('div',{style:{fontSize:'16px',color:'#D8D5D0',marginBottom:'4px'}},'Tap to reveal your secret objective'));li.appendChild(el('div',{style:{fontSize:'12px',color:'#A8A49E'}},T('Visible to you alone','Face ID protected in production')));lr.appendChild(li);ocard.appendChild(lr);}
+  else ocard.appendChild(el('p',{style:{fontSize:'16px',color:'#A8A49E',fontStyle:'italic'}},'No specific objective for this scenario.'));
+  osec.appendChild(ocard);scroll.appendChild(osec);
+  const msec=el('div',{style:{padding:'0 24px 20px'}});msec.appendChild(el('div',{cls:'slbl'},'OTHER COUNCIL MEMBERS'));players.filter(p=>!p.isMe).forEach(p=>{const row=el('div',{style:{display:'flex',alignItems:'center',gap:'12px',padding:'11px 0',borderBottom:'0.5px solid var(--bd)'}});row.appendChild(av(p.faction,36,16));const pi=el('div',{style:{flex:1}});pi.appendChild(el('div',{style:{fontSize:'16px',color:'#EDE9E3',marginBottom:'3px'}},p.faction.name));pi.appendChild(el('div',{style:{fontSize:'12px',color:'#A8A49E',fontFamily:'JetBrains Mono,monospace'}},T(`${p.agent.handle} · AI controlled`,`${p.agent.handle} · AGNTCY verified`)));row.appendChild(pi);row.appendChild(bdg(T('AI AGENT','AI AGENT'),p.faction.color));msec.appendChild(row);});scroll.appendChild(msec);
+  const isec=el('div',{style:{padding:'0 24px 20px'}});isec.appendChild(el('div',{cls:'slbl'},T('WHAT THE COUNCIL MUST DECIDE','NEGOTIATION ISSUES')));sc2.issues.forEach(issue=>{const ic=el('div',{style:{marginBottom:'8px',padding:'12px 14px',background:'var(--bg1)',borderRadius:'4px',border:'0.5px solid var(--bd)'}});ic.appendChild(el('div',{style:{fontSize:'16px',color:'#EDE9E3',marginBottom:'6px'}},T(issue.plain,issue.label)));const opts=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});issue.options.forEach(o=>opts.appendChild(el('span',{style:{padding:'3px 10px',borderRadius:'20px',border:'0.5px solid rgba(255,255,255,0.12)',fontSize:'13px',color:'#A8A49E'}},o)));ic.appendChild(opts);isec.appendChild(ic);});scroll.appendChild(isec);
+  scroll.appendChild(el('div',{style:{height:'100px'}}));sc.appendChild(scroll);
+  const bot=el('div',{style:{padding:'10px 24px 44px',flexShrink:0,borderTop:'0.5px solid var(--bd)',background:'var(--bg)'}});bot.appendChild(techBar());bot.appendChild(el('div',{style:{height:'10px'}}));bot.appendChild(el('button',{cls:'btn btn-gold',onclick:startNegotiation},'ENTER THE NEGOTIATION CHAMBER'));sc.appendChild(bot);return sc;
+}
+
+function scrChamber(){
+  const{myFaction:f,myAgent:ag,scenario:sc2,sessionState,sessionRound,agreementScore,chamberTab,pendingCS,pendingPrivate}=S;const sc=el('div',{cls:'screen'});
+  const sb=el('div',{cls:'status-bar'});const sr=el('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}});const sl=el('div');sl.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'15px',color:'#EDE9E3'}},sc2.name));sl.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',marginTop:'3px',color:f.color}},`${f.name} — ${ag.handle}`));sr.appendChild(sl);
+  const stC={idle:'#A8A49E',deliberating:'#C9A84C',negotiating:'#3D9D6A',waiting:'#C9A84C',complete:'#3D9D6A',failed:'#A03A3A'};const stL={idle:'Idle',deliberating:'Deliberating…',negotiating:'In session',waiting:'Processing…',complete:'Agreed ✓',failed:'Collapsed'};
+  const settled=Object.values(S.resolvedIssues).filter(Boolean).length,total=sc2.issues.length;const srt=el('div',{style:{textAlign:'right'}});srt.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:stC[sessionState],letterSpacing:'0.5px'}},T(stL[sessionState],sessionState.toUpperCase())));srt.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#A8A49E',marginTop:'2px'}},`${settled}/${total} sealed · ${agreementScore}%`));sr.appendChild(srt);sb.appendChild(sr);
+  const prog=el('div',{cls:'prog-track'});prog.appendChild(el('div',{cls:'prog-fill',style:{width:`${agreementScore}%`,background:agreementScore>70?'#3D9D6A':agreementScore>40?'#C9A84C':'#A03A3A'}}));sb.appendChild(prog);sc.appendChild(sb);
+  const tabs=el('div',{cls:'tabs'});[['negotiate','NEGOTIATE'],['webex','WEBEX'],['evidence','EVIDENCE']].forEach(([id,lbl])=>tabs.appendChild(el('button',{cls:`tab${chamberTab===id?' on':''}`,onclick:()=>{S.chamberTab=id;render();}},lbl)));sc.appendChild(tabs);sc.appendChild(techBar());
+  if(pendingCS){const al=el('div',{cls:'alert-bar'});al.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#C9A84C',marginBottom:'8px'}},T('⚠ YOUR AUTHORIZATION NEEDED','⚠ TBAC COUNTERSIGN REQUIRED')));al.appendChild(el('p',{style:{fontSize:'15px',color:'#EDE9E3',marginBottom:'10px'}},T("This move requires your direct authorization before your agent can proceed.",'Your agent requires human countersign authorization.')));al.appendChild(el('button',{style:{padding:'9px 18px',background:'transparent',border:'1px solid #C9A84C',color:'#C9A84C',fontFamily:'JetBrains Mono,monospace',fontSize:'10px',borderRadius:'3px',cursor:'pointer',letterSpacing:'1px'},onclick:countersign},'AUTHORIZE →'));sc.appendChild(al);}
+  if(pendingPrivate){const from=pendingPrivate.fromAgent;const pal=el('div',{style:{padding:'12px 20px',background:'rgba(123,94,167,0.1)',borderBottom:'1px solid #7B5EA7',flexShrink:0}});const pr=el('div',{style:{display:'flex',alignItems:'center',gap:'12px'}});pr.appendChild(av(from.faction,32,14));const pi=el('div',{style:{flex:1}});pi.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#7B5EA7',marginBottom:'3px'}},'SECURE 1:1 CHANNEL REQUEST'));pi.appendChild(el('div',{style:{fontSize:'14px',color:'#EDE9E3'}},`${from.faction.name} wants to negotiate privately`));pr.appendChild(pi);const pb=el('div',{style:{display:'flex',gap:'6px'}});pb.appendChild(el('button',{style:{padding:'6px 12px',background:'rgba(123,94,167,0.2)',border:'0.5px solid #7B5EA7',color:'#7B5EA7',borderRadius:'3px',fontSize:'12px',cursor:'pointer',fontFamily:'JetBrains Mono,monospace'},onclick:acceptPrivate},'ACCEPT'));pb.appendChild(el('button',{style:{padding:'6px 12px',background:'transparent',border:'0.5px solid rgba(255,255,255,0.12)',color:'#A8A49E',borderRadius:'3px',fontSize:'12px',cursor:'pointer',fontFamily:'JetBrains Mono,monospace'},onclick:declinePrivate},'DECLINE'));pr.appendChild(pb);pal.appendChild(pr);sc.appendChild(pal);}
+  if(chamberTab==='negotiate')sc.appendChild(tabNeg());if(chamberTab==='webex')sc.appendChild(tabWX());if(chamberTab==='evidence')sc.appendChild(tabEv());
+  if(S.privateThread)sc.appendChild(privPanel());
+  return sc;
+}
+
+function tabNeg(){
+  const{scenario:sc2,myFaction:f,resolvedIssues,myProposal,sessionState,sessionRound,agreementScore}=S;const scroll=el('div',{cls:'scroll',style:{padding:'0'}});
+  if(S.toast){const isC=S.toast.type==='confirm';const t=el('div',{cls:`toast ${S.toast.type}`});t.appendChild(el('span',{cls:'t-icon'},isC?'✓':'↩'));const tb=el('div');tb.appendChild(el('div',{cls:'t-title',style:{color:isC?'#3D9D6A':'#C9A84C'}},S.toast.title));tb.appendChild(el('div',{cls:'t-msg'},S.toast.msg));t.appendChild(tb);scroll.appendChild(t);}
+  const shdr=el('div',{cls:'session-hdr'});const srow=el('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}});const sdot=el('div',{cls:'s-dot',style:{background:sessionState==='waiting'?'#C9A84C':sessionState==='negotiating'?'#3D9D6A':'#A8A49E',animation:['waiting','negotiating','deliberating'].includes(sessionState)?'pulse 2s infinite':'none'}});srow.appendChild(sdot);srow.appendChild(el('span',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#A8A49E',letterSpacing:'1px'}},`MYCELIUM SESSION · ${sc2.name.toUpperCase()} · ${S.players?.length||6} AGENTS`));shdr.appendChild(srow);
+  const pills=el('div',{cls:'r-pills'});for(let i=1;i<=S.maxRounds;i++){const done=i<=sessionRound,cur=i===sessionRound+1&&['negotiating','waiting'].includes(sessionState);pills.appendChild(el('div',{cls:'r-pill',style:{background:done?'#3D9D6A':cur?'#C9A84C':'rgba(255,255,255,0.07)'}}));}shdr.appendChild(pills);
+  const ceRow=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}});const ceL=el('div');ceL.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'0.5px',marginBottom:'2px'}},sessionState==='waiting'?`COGNITIVEENGINE PROCESSING ROUND ${sessionRound+1}…`:sessionState==='deliberating'?'DELIBERATION WINDOW — AGENTS REVIEWING POSITIONS':sessionState==='negotiating'&&sessionRound===0?'ROUND 1 · SUBMIT OPENING POSITION':sessionState==='negotiating'?`ROUND ${sessionRound+1} · SUBMIT UPDATED POSITION`:sessionState==='complete'?'SESSION COMPLETE · CONSENSUS REACHED':sessionState==='failed'?'SESSION TERMINATED · NO CONSENSUS':'AWAITING SESSION INITIALIZATION…'));const sN=Object.values(resolvedIssues).filter(Boolean).length,tN=sc2.issues.length,rLeft=S.maxRounds-sessionRound;ceL.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#5A5650'}},`${sN}/${tN} items sealed · proximity ${agreementScore}% · ${rLeft} round${rLeft!==1?'s':''} remaining`));ceRow.appendChild(ceL);const agB=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',textAlign:'right',lineHeight:1.7}});agB.innerHTML=`<span style="color:#C9A84C">${S.myAgent?.handle}</span><br><span style="color:#2A4A36">✓ SPIFFE verified</span>`;ceRow.appendChild(agB);shdr.appendChild(ceRow);
+  if(sessionState==='deliberating'&&S.deliberateSecs>0){
+    const cdEl=el('div',{style:{
+      marginTop:'8px',padding:'10px 12px',borderRadius:'4px',
+      background:'rgba(201,168,76,0.08)',
+      border:`0.5px solid ${S.deliberateSecs<=10?'#A03A3A':'rgba(201,168,76,0.3)'}`,
+      textAlign:'center',
+    }});
+    const cdTop=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'14px',color:S.deliberateSecs<=10?'#A03A3A':'#C9A84C',fontWeight:700,marginBottom:'4px'}},
+      `⏱ ${S.deliberateSecs}s — Deliberation window`);
+    const cdSub=el('div',{style:{fontSize:'14px',color:'#A8A49E',lineHeight:1.5}},
+      'All agents are reviewing their opening positions. Use this time to read the scenario, study your secret objective, and consider your strategy. Voting opens when the timer ends.');
+    cdEl.appendChild(cdTop);cdEl.appendChild(cdSub);
+    shdr.appendChild(cdEl);
+  }
+  const thresh=Math.ceil((S.players?.length||6)*0.55);const cr=el('div',{cls:'cons-rule'});cr.innerHTML=`<span style="color:#3D9D6A">CONSENSUS RULE:</span> When <strong>${thresh} of ${S.players?.length||6}</strong> agents agree on an item, it is sealed and written to Mycelium room memory.`;shdr.appendChild(cr);scroll.appendChild(shdr);
+  const inner=el('div',{style:{padding:'16px 20px'}});
+  if(S.myObjective){
+    const op=el('div',{style:{
+      padding:'16px 18px',borderRadius:'6px',marginBottom:'24px',
+      background:'rgba(201,168,76,0.08)',
+      border:'1.5px solid rgba(201,168,76,0.5)',
+      boxShadow:'0 0 20px rgba(201,168,76,0.08)',
+    }});
+    // Header row
+    const ph=el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px',paddingBottom:'10px',borderBottom:'0.5px solid rgba(201,168,76,0.2)'}});
+    ph.appendChild(el('span',{style:{fontSize:'20px'}},'🔒'));
+    const phText=el('div');
+    phText.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#C9A84C',letterSpacing:'1.5px',marginBottom:'2px'}},'YOUR SECRET OBJECTIVE'));
+    phText.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'rgba(201,168,76,0.5)',letterSpacing:'0.5px'}},'VISIBLE TO YOU ONLY · NOT TRANSMITTED TO SESSION'));
+    ph.appendChild(phText);
+    op.appendChild(ph);
+    // Goal statement — large and clear
+    op.appendChild(el('div',{style:{fontSize:'18px',color:'#EDE9E3',fontStyle:'italic',lineHeight:1.65,marginBottom:'14px',fontWeight:600}},`"${S.myObjective.goal}"`));
+    // Hint
+    op.appendChild(el('div',{style:{fontSize:'14px',color:'#C0BDB8',lineHeight:1.6,marginBottom:'14px',paddingBottom:'14px',borderBottom:'0.5px solid rgba(201,168,76,0.15)'}},S.myObjective.hint));
+    // Target rows
+    op.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',letterSpacing:'1.5px',marginBottom:'10px'}},'YOU NEED THE COUNCIL TO AGREE ON:'));
+    Object.entries(S.myObjective.targets).forEach(([issueId,target])=>{
+      const issue=sc2.issues.find(i=>i.id===issueId);if(!issue)return;
+      const agreed=resolvedIssues[issueId];const hit=agreed===target,miss=agreed&&!hit;
+      const tr=el('div',{cls:'obj-tr',style:{paddingTop:'8px',paddingBottom:'8px'}});
+      tr.appendChild(el('span',{style:{fontSize:'15px',color:hit?'#3D9D6A':miss?'#A03A3A':'#C0BDB8',lineHeight:1.4}},T(issue.plain,issue.label)));
+      const right=el('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexShrink:0}});
+      right.appendChild(el('span',{style:{fontSize:'15px',color:hit?'#3D9D6A':miss?'#A03A3A':'#C9A84C',fontWeight:700}},`→ ${target}`));
+      if(hit)right.appendChild(el('span',{style:{fontSize:'18px',color:'#3D9D6A',fontWeight:900}},'✓'));
+      if(miss)right.appendChild(el('span',{style:{fontSize:'18px',color:'#A03A3A'}},'✗'));
+      tr.appendChild(right);op.appendChild(tr);
+    });
+    inner.appendChild(op);
+  }
+  inner.appendChild(el('div',{cls:'slbl'},`SESSION AGENDA · ${sc2.issues.length} ITEMS · FILE YOUR POSITION ON EACH`));
+  sc2.issues.forEach((issue,idx)=>{
+    const resolved=resolvedIssues[issue.id];const isWait=['waiting','deliberating'].includes(sessionState);const iDiv=el('div',{cls:'issue-block'});
+    const lrow=el('div',{style:{display:'flex',alignItems:'flex-start',gap:'12px',marginBottom:'10px'}});lrow.appendChild(el('div',{cls:`issue-num${resolved?' done':''}`},resolved?'✓':`${idx+1}.`));
+    const lb=el('div',{style:{flex:1}});lb.appendChild(el('div',{cls:`issue-label${resolved?' done':''}`,style:{marginBottom:'4px'}},T(issue.plain,issue.label)));if(!resolved)lb.appendChild(el('div',{cls:'issue-status',style:{color:isWait?'#C9A84C':'#5A5650'}},isWait?'POSITION FILED · AWAITING OTHER AGENTS':'FILE YOUR POSITION BELOW'));lrow.appendChild(lb);iDiv.appendChild(lrow);
+    if(resolved){const lc=el('div',{cls:'locked-card'});
+      // Bold green checkmark
+      lc.appendChild(el('div',{style:{fontSize:'28px',color:'#3D9D6A',flexShrink:0,marginRight:'4px',fontWeight:900,lineHeight:1}},'✓'));
+      const lcr=el('div');lcr.appendChild(el('div',{style:{fontSize:'17px',color:'#3D9D6A',fontWeight:700,marginBottom:'3px'}},resolved));lcr.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'rgba(61,157,106,0.5)',letterSpacing:'0.5px'}},'CONSENSUS WRITTEN TO ROOM MEMORY · SEALED'));lc.appendChild(lcr);iDiv.appendChild(lc);}
+    else{
+      const ow=el('div',{style:{marginLeft:'22px'}});
+      issue.options.forEach(opt=>{const isSel=myProposal[issue.id]===opt;const optEl=el('div',{cls:`opt${isSel?' sel':''}${isWait?' locked':''}`,style:{'--sel-c':f.color,'--sel-rgb':rgb(f.color)},onclick:()=>{if(!isWait){SFX.select();S.myProposal={...S.myProposal,[issue.id]:opt};S.toast=null;renderPreserveScroll();}}},el('span',{cls:'opt-radio',style:{borderColor:isSel?f.color:'rgba(255,255,255,0.2)',color:f.color}},isSel?'●':''),el('span',{},opt));ow.appendChild(optEl);});iDiv.appendChild(ow);
+      if(sessionState==='negotiating'&&sessionRound>0&&!isWait){const already=S.broadcastSignals.some(s=>s.issueId===issue.id&&s.round===sessionRound);if(!already){// Signal section with explanation
+      const sigWrap=el('div',{style:{marginLeft:'22px',marginTop:'10px',padding:'10px 12px',background:'rgba(255,255,255,0.02)',borderRadius:'4px',border:'0.5px solid rgba(255,255,255,0.07)'}});
+      sigWrap.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#5A5650',letterSpacing:'1px',marginBottom:'8px'}},'BROADCAST YOUR POSITION TO ALL AGENTS BEFORE VOTING:'));
+      const sigRow=el('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap'}});
+      const flexBtn=el('button',{style:{padding:'7px 12px',fontSize:'12px',fontFamily:'JetBrains Mono,monospace',background:'transparent',border:'0.5px solid rgba(255,255,255,0.18)',color:'#A8A49E',borderRadius:'3px',cursor:'pointer',letterSpacing:'0.5px',lineHeight:1.4},onclick:()=>broadcastSignal(issue.id,'flexible')});
+      flexBtn.innerHTML='📢 <strong>Open to any outcome</strong><br><span style="font-size:10px;color:#5A5650">Signals flexibility — invites negotiation</span>';
+      const needBtn=el('button',{style:{padding:'7px 12px',fontSize:'12px',fontFamily:'JetBrains Mono,monospace',background:'rgba(201,168,76,0.06)',border:'0.5px solid rgba(201,168,76,0.3)',color:'#C9A84C',borderRadius:'3px',cursor:'pointer',letterSpacing:'0.5px',lineHeight:1.4},onclick:()=>broadcastSignal(issue.id,'need')});
+      needBtn.innerHTML='🔒 <strong>This one matters to me</strong><br><span style="font-size:10px;color:rgba(201,168,76,0.5)">Signals priority — warns others not to push here</span>';
+      sigRow.appendChild(flexBtn);sigRow.appendChild(needBtn);sigWrap.appendChild(sigRow);iDiv.appendChild(sigWrap);}else{
+        const sentSig=S.broadcastSignals.find(s=>s.issueId===issue.id&&s.round===sessionRound);
+        const sentLabel=sentSig?.signal==='flexible'?'📢 Open to any outcome':'🔒 This one matters to me';
+        const myChoice=myProposal[issue.id]||'—';
+        const doneWrap=el('div',{style:{marginLeft:'22px',marginTop:'8px',padding:'10px 12px',background:'rgba(61,157,106,0.05)',borderRadius:'4px',border:'0.5px solid rgba(61,157,106,0.2)'}});
+        doneWrap.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#3D9D6A',letterSpacing:'1px',marginBottom:'6px'}},'✓ SIGNAL BROADCAST TO ALL AGENTS THIS ROUND'));
+        const sigRow2=el('div',{style:{fontSize:'14px',color:'#A8A49E',lineHeight:2}});
+        sigRow2.innerHTML=`Signal: <strong style="color:#EDE9E3">${sentLabel}</strong><br>Your position filed as: <strong style="color:#C9A84C">${myChoice}</strong>`;
+        doneWrap.appendChild(sigRow2);
+        iDiv.appendChild(doneWrap);
+      }}
+    }
+    inner.appendChild(iDiv);
+  });
+  const openIs=sc2.issues.filter(i=>!resolvedIssues[i.id]);
+  if(openIs.length>0&&!['waiting','deliberating','idle'].includes(sessionState)&&sessionRound>=0&&S.phase==='chamber'){const tx=el('div',{cls:'tx-panel'});tx.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#3A3830',letterSpacing:'1px',marginBottom:'8px'}},'MYCELIUM · PENDING TRANSMISSION PAYLOAD'));const pl=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#3A3830',lineHeight:2}});const lines=[`<span style="color:#5A5650">session.propose(</span>`,`<span style="color:#5A5650">  session_id: </span><span style="color:#3D9D6A">"${sc2.id}-round-${sessionRound+1}"</span>`,`<span style="color:#5A5650">  agent:      </span><span style="color:#C9A84C">"${S.myAgent?.handle}"</span>`,`<span style="color:#5A5650">  positions: {</span>`,...openIs.map(i=>`<span style="color:#5A5650">    ${i.id}: </span><span style="color:#D8D5D0">"${myProposal[i.id]||'—'}"</span>`),`<span style="color:#5A5650">  }</span>`,`<span style="color:#5A5650">  signed_by: </span><span style="color:#3D9D6A">"${S.myFaction?.spiffeId?.split('/').pop()}"</span>`,`<span style="color:#5A5650">  objective_transmitted: </span><span style="color:#A03A3A">false</span>`,`<span style="color:#5A5650">)</span>`];pl.innerHTML=lines.join('<br>');tx.appendChild(pl);inner.appendChild(tx);}
+  const canSub=sessionState==='negotiating';const subLbl=sessionState==='negotiating'&&sessionRound===0?'TRANSMIT OPENING POSITION TO SESSION':sessionState==='negotiating'?'TRANSMIT UPDATED POSITION TO SESSION':sessionState==='waiting'?'COGNITIVEENGINE PROCESSING…':sessionState==='deliberating'?`DELIBERATION — ${S.deliberateSecs}s REMAINING`:sessionState==='complete'?'SESSION COMPLETE · CONSENSUS REACHED':sessionState==='failed'?'SESSION TERMINATED · NO CONSENSUS':'PREPARING SESSION…';
+  const subBtn=document.createElement('button');subBtn.className=`btn ${canSub?'btn-gold':'btn-dim'}`;subBtn.style.marginBottom='80px';subBtn.textContent=subLbl;if(!canSub)subBtn.disabled=true;else subBtn.addEventListener('click',()=>{S.toast=null;submitProposal(S.myProposal);});inner.appendChild(subBtn);scroll.appendChild(inner);return scroll;
+}
+
+function tabWX(){
+  const{msgs,myFaction:f}=S;const scroll=el('div',{cls:'scroll',style:{padding:'12px 16px'}});const ch=el('div',{cls:'wx-hdr'});ch.appendChild(el('div',{style:{width:'10px',height:'10px',borderRadius:'50%',background:'#3D9D6A',animation:'pulse 2s infinite'}}));ch.appendChild(el('span',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#A8A49E',letterSpacing:'1px'}},T('Council Chamber — Live','WEBEX SPACE · AGNTCY VERIFIED')));scroll.appendChild(ch);
+  if(!msgs.length)scroll.appendChild(el('p',{style:{textAlign:'center',padding:'40px 20px',color:'#A8A49E',fontStyle:'italic',fontSize:'16px'}},'The chamber is quiet. Messages will appear here as negotiations unfold.'));
+  msgs.forEach(msg=>{const isMe=msg.fId===f?.id,isSys=msg.sys;const mf=S.players?.find(p=>p.faction.id===msg.fId);const wrap=el('div',{style:{marginBottom:'14px',animation:'slidein 0.3s ease both'}});if(isSys){wrap.appendChild(el('div',{cls:'wx-sys'},msg.text));}else{const row=el('div',{style:{display:'flex',gap:'10px',flexDirection:isMe?'row-reverse':'row',alignItems:'flex-end'}});if(mf)row.appendChild(av(mf.faction,30,13));const bw=el('div',{style:{maxWidth:'80%'}});bw.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:mf?.faction?.color||'#A8A49E',marginBottom:'3px',textAlign:isMe?'right':'left'}},T(isMe?f.name:msg.fname,msg.aname)));bw.appendChild(el('div',{cls:'wx-bbl',style:{background:isMe?`rgba(${rgb(f?.color||'#C9A84C')},0.14)`:'var(--bg2)',border:`0.5px solid ${isMe?f?.color||'#C9A84C':'rgba(255,255,255,0.09)'}`}},msg.text));if(msg.signed)bw.appendChild(el('div',{cls:'wx-sig',style:{textAlign:isMe?'right':'left'}},T('✓ verified','✓ AGNTCY signed')));row.appendChild(bw);wrap.appendChild(row);}scroll.appendChild(wrap);});
+  scroll.appendChild(el('div',{style:{height:'20px'}}));setTimeout(()=>{if(scroll.scrollTop!==undefined)scroll.scrollTop=scroll.scrollHeight;},50);return scroll;
+}
+
+function tabEv(){
+  const{auditLog:log,scenario:sc2}=S;const scroll=el('div',{cls:'scroll',style:{padding:'16px 20px'}});scroll.appendChild(el('div',{cls:'slbl'},T('THE EVIDENCE TRAIL','AGNTCY AUDIT LOG')));scroll.appendChild(el('p',{style:{fontSize:'15px',color:'#A8A49E',fontStyle:'italic',marginBottom:'16px',lineHeight:1.5}},T('Everything in this chamber is permanently recorded. Agents cannot lie about what was agreed.','Every agent action is logged with its cryptographic SPIFFE identity. The AGNTCY room memory cannot be tampered with.')));
+  if(!log.length)scroll.appendChild(el('div',{style:{textAlign:'center',padding:'40px',color:'#A8A49E',fontStyle:'italic',fontSize:'16px'}},'No events yet. Submit a proposal to build the trail.'));
+  else{const tL={registered:T('Representative registered','AGENT REGISTERED'),position:T('Opening position filed','POSITION FILED'),proposal:T('Proposal submitted','PROPOSAL SUBMITTED'),response:T('Response received','RESPONSE RECEIVED'),round:T('Round complete','CE ROUND COMPLETE')};log.forEach(e=>{const card=el('div',{style:{marginBottom:'8px',padding:'12px 14px',background:'var(--bg1)',border:'0.5px solid var(--bd)',borderRadius:'4px'}});card.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#C9A84C',marginBottom:'6px'}},tL[e.type]||e.type));if(e.type==='registered'){const d=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#A8A49E',lineHeight:1.8}});d.innerHTML=S.techMode?`<span style="color:#5A5650">handle: </span>${e.handle}<br><span style="color:#5A5650">spiffe: </span><span style="color:#3D9D6A">${e.spiffeId?.split('/').pop()}</span>`:`<span style="color:#5A5650">Name: </span>${e.handle}<br><span style="color:#5A5650">Secret key: </span><span style="color:#3D9D6A">✓ secured</span>`;card.appendChild(d);}if(e.type==='round'){const d=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:'#A8A49E',lineHeight:1.8}});d.innerHTML=`<span style="color:#5A5650">${T('Agreement','Score')}: </span><span style="color:#EDE9E3">${e.score}%</span>`;card.appendChild(d);Object.entries(e.consensus||{}).forEach(([k,v])=>{const issue=sc2?.issues.find(i=>i.id===k);const ld=el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:v?'#3D9D6A':'#A03A3A'}});ld.textContent=`${T(issue?.plain||k,k)}: ${v?'✓ '+v:'✗ unresolved'}`;card.appendChild(ld);});}card.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#2A2820',marginTop:'4px'}},new Date(e.ts).toLocaleTimeString()));scroll.appendChild(card);});}
+  scroll.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#A8A49E',letterSpacing:'2px',margin:'24px 0 10px'}},T('WHAT DO THESE TERMS MEAN?','TECHNICAL GLOSSARY')));GLOSSARY.forEach(g=>{const gc=el('div',{style:{marginBottom:'8px',padding:'12px 14px',background:'var(--bg1)',borderRadius:'4px',border:'0.5px solid rgba(255,255,255,0.05)'}});gc.appendChild(el('div',{style:{fontSize:'14px',color:'#C9A84C',marginBottom:'4px',fontFamily:'Cinzel,serif'}},T(g.term,g.tech)));gc.appendChild(el('div',{style:{fontSize:'14px',color:'#A8A49E',lineHeight:1.5}},g.def));scroll.appendChild(gc);});scroll.appendChild(el('div',{style:{height:'60px'}}));return scroll;
+}
+
+function privPanel(){
+  const thread=S.privateThread;const oF=S.players?.find(p=>p.faction.id===thread.factionId);const panel=el('div',{cls:`sig-panel${S.privateOpen?' open':''}`});
+  const ph=el('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px'}});ph.appendChild(el('span',{style:{fontSize:'18px'}},'🔒'));const pi=el('div',{style:{flex:1}});pi.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#7B5EA7',letterSpacing:'1px',marginBottom:'2px'}},'SECURE 1:1 CHANNEL · NOT VISIBLE TO OTHER AGENTS'));pi.appendChild(el('div',{style:{fontSize:'14px',color:'#EDE9E3'}},oF?.faction.name||'Agent'));ph.appendChild(pi);ph.appendChild(el('button',{style:{color:'#A8A49E',fontSize:'18px',padding:'4px'},onclick:()=>{S.privateOpen=false;render();}},'▼'));panel.appendChild(ph);
+  const msgs=el('div',{style:{maxHeight:'140px',overflowY:'auto',marginBottom:'10px'}});thread.msgs.forEach(m=>{const isMe=m.from==='me';const mb=el('div',{style:{marginBottom:'8px',display:'flex',justifyContent:isMe?'flex-end':'flex-start'}});mb.appendChild(el('div',{style:{maxWidth:'85%',padding:'8px 12px',borderRadius:'4px',fontSize:'14px',lineHeight:1.5,background:isMe?'rgba(201,168,76,0.12)':'rgba(123,94,167,0.12)',border:`0.5px solid ${isMe?'rgba(201,168,76,0.3)':'rgba(123,94,167,0.3)'}`,color:'#EDE9E3'}},m.text));msgs.appendChild(mb);});panel.appendChild(msgs);
+  // Suggested prompts — helps players know what to say
+  const prompts=[
+    "I'm flexible on one issue if you are — which matters most to you?",
+    "I need a specific outcome on one item. Can we trade?",
+    "Signal publicly that you're flexible and I'll do the same.",
+    "I won't move on my priority item. What can you offer elsewhere?",
+    "Let's agree privately and both vote the same way this round.",
+  ];
+  const promptWrap=el('div',{style:{marginBottom:'10px'}});
+  promptWrap.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#5A5650',letterSpacing:'1px',marginBottom:'6px'}},'SUGGESTED MESSAGES:'));
+  const promptRow=el('div',{style:{display:'flex',flexWrap:'wrap',gap:'5px'}});
+  prompts.forEach(p=>{
+    const pb=el('button',{style:{padding:'5px 9px',fontSize:'12px',background:'rgba(123,94,167,0.08)',border:'0.5px solid rgba(123,94,167,0.25)',color:'#A8A49E',borderRadius:'3px',cursor:'pointer',lineHeight:1.4,textAlign:'left'},
+      onclick:()=>{const inp2=panel.querySelector('input[type=text]');if(inp2){inp2.value=p;inp2.focus();}}
+    },p);
+    promptRow.appendChild(pb);
+  });
+  promptWrap.appendChild(promptRow);
+  panel.appendChild(promptWrap);
+
+  const ir=el('div',{style:{display:'flex',gap:'8px'}});
+  const inp=el('input',{type:'text',cls:'f-inp',placeholder:'Type your message or tap a suggestion above…',style:{flex:1,fontSize:'14px',padding:'9px 12px'}});
+  inp.onkeydown=e=>{if(e.key==='Enter'){sendPrivateMsg(inp.value);inp.value='';}};
+  ir.appendChild(inp);
+  ir.appendChild(el('button',{style:{padding:'9px 14px',background:'rgba(123,94,167,0.2)',border:'0.5px solid #7B5EA7',color:'#7B5EA7',borderRadius:'3px',fontSize:'12px',cursor:'pointer',fontFamily:'JetBrains Mono,monospace'},onclick:()=>{sendPrivateMsg(inp.value);inp.value='';}
+},'SEND'));panel.appendChild(ir);return panel;
+}
+
+function scrResults(){
+  const{gameResult:gr,scenario:sc2,myFaction:f}=S;const isWin=gr?.type==='win';const col=isWin?'#3D9D6A':'#A03A3A';const sc=el('div',{cls:'screen'});const scroll=el('div',{cls:'scroll'});const cont=el('div',{style:{padding:'80px 32px 48px',background:`radial-gradient(ellipse at 50% 0%,rgba(${rgb(col)},0.1) 0%,transparent 55%)`,textAlign:'center'}});
+  cont.appendChild(el('div',{style:{fontSize:'54px',marginBottom:'18px'}},isWin?'⚖':'💀'));cont.appendChild(bdg(isWin?'TREATY RATIFIED':'COUNCIL COLLAPSED',col));const h2=el('h2',{style:{fontFamily:'Cinzel,serif',fontSize:'28px',color:'#EDE9E3',letterSpacing:'2px',margin:'16px 0 12px'}});h2.textContent=isWin?'The Council Agrees':'The Council Fractures';cont.appendChild(h2);
+  cont.appendChild(el('p',{style:{fontSize:'18px',color:'#C0BDB8',fontStyle:'italic',lineHeight:1.75,marginBottom:'28px'}},isWin?`The Council ratified a treaty with an agreement score of ${gr?.score}%. The immediate crisis is managed — for now.`:`No agreement was reached. The ${sc2?.name} continues unchecked.`));
+  if(S.myObjective){const fc=gr?.consensus||S.resolvedIssues;let hits=0,tot=0;Object.entries(S.myObjective.targets).forEach(([k,v])=>{tot++;if(fc[k]===v)hits++;});const ach=hits===tot,part=hits>0&&!ach;const oc=ach?'#3D9D6A':part?'#C9A84C':'#A03A3A';const objCard=el('div',{style:{padding:'18px',borderRadius:'6px',marginBottom:'24px',textAlign:'left',background:`rgba(${rgb(oc)},0.08)`,border:`0.5px solid rgba(${rgb(oc)},0.35)`}});objCard.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'10px',color:oc,letterSpacing:'1px',marginBottom:'8px'}},ach?'🏆 SECRET OBJECTIVE ACHIEVED':part?'⚠ PARTIAL — NOT EVERYTHING WENT YOUR WAY':'✗ SECRET OBJECTIVE FAILED'));objCard.appendChild(el('div',{style:{fontSize:'15px',color:'#EDE9E3',fontStyle:'italic',marginBottom:'12px'}},`"${S.myObjective.goal}"`));Object.entries(S.myObjective.targets).forEach(([k,v])=>{const issue=sc2?.issues.find(i=>i.id===k);const agreed=fc[k];const hit=agreed===v;const tr=el('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:'0.5px solid rgba(255,255,255,0.07)'}});tr.appendChild(el('span',{style:{fontSize:'14px',color:'#A8A49E'}},T(issue?.plain||k,k)));const rr=el('div',{style:{display:'flex',alignItems:'center',gap:'8px'}});rr.appendChild(el('span',{style:{fontSize:'14px',color:'#A8A49E'}},'wanted: '));rr.appendChild(el('span',{style:{fontSize:'14px',color:hit?'#3D9D6A':'#A03A3A',fontWeight:600}},v));rr.appendChild(el('span',{style:{fontSize:'12px'}},hit?'✓':`✗ got: ${agreed||'none'}`));tr.appendChild(rr);objCard.appendChild(tr);});cont.appendChild(objCard);}
+  if(isWin){const treaty=el('div',{style:{padding:'20px',background:'var(--bg1)',border:'0.5px solid rgba(255,255,255,0.09)',borderRadius:'6px',textAlign:'left',marginBottom:'24px'}});treaty.appendChild(el('div',{cls:'slbl'},'RATIFIED TREATY TERMS'));Object.entries(gr?.consensus||{}).filter(([,v])=>v).forEach(([k,v])=>{const issue=sc2?.issues.find(i=>i.id===k);const row=el('div',{style:{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:'0.5px solid var(--bd)'}});row.appendChild(el('span',{style:{color:'#A8A49E',fontSize:'15px'}},T(issue?.plain||k,k)));row.appendChild(el('span',{style:{color:'#3D9D6A',fontSize:'15px'}},v));treaty.appendChild(row);});treaty.appendChild(el('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'9px',color:'#2A2820',marginTop:'14px'}},T('Permanently recorded · Cannot be altered','Mycelium room memory · Tamper-proof · Immutable')));cont.appendChild(treaty);}
+  const pb=el('div',{style:{padding:'18px',background:'var(--bg2)',borderRadius:'6px',marginBottom:'24px'}});pb.appendChild(el('div',{cls:'slbl',style:{marginBottom:'12px'}},'POWERED BY'));const agL=el('a',{href:'https://agntcy.org',target:'_blank',style:{display:'block',textDecoration:'none',marginBottom:'10px',padding:'12px 14px',background:'rgba(201,168,76,0.07)',borderRadius:'4px',border:'0.5px solid rgba(201,168,76,0.25)'}});agL.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'17px',color:'#C9A84C',letterSpacing:'1px',marginBottom:'3px'}},'AGNTCY.org ↗'));if(S.techMode)agL.appendChild(el('div',{style:{fontSize:'12px',color:'#A8A49E',fontStyle:'italic'}},'Open agent identity, directory & authorization — Linux Foundation'));pb.appendChild(agL);const myL=el('a',{href:'https://mycelium-io.github.io/mycelium/',target:'_blank',style:{display:'block',textDecoration:'none',padding:'10px 14px',background:'rgba(123,94,167,0.07)',borderRadius:'4px',border:'0.5px solid rgba(123,94,167,0.25)'}});myL.appendChild(el('div',{style:{fontFamily:'Cinzel,serif',fontSize:'15px',color:'#7B5EA7',letterSpacing:'1px',marginBottom:'3px'}},'Mycelium ↗'));if(S.techMode)myL.appendChild(el('div',{style:{fontSize:'12px',color:'#A8A49E',fontStyle:'italic'}},'Secure multi-agent coordination layer'));pb.appendChild(myL);cont.appendChild(pb);
+  cont.appendChild(el('button',{cls:'btn btn-ghost',onclick:()=>window.location.reload()},'CONVENE A NEW COUNCIL'));scroll.appendChild(cont);sc.appendChild(scroll);sc.appendChild(techBar());return sc;
+}
+
+// ═══════════════════ RENDER ═══════════════════════════════
+function renderPreserveScroll(){
+  // Save scroll position of the negotiate tab scroll area
+  const scrollEl = document.querySelector('.scroll');
+  const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
+  render();
+  // Restore after DOM rebuild
+  requestAnimationFrame(()=>{
+    const newScroll = document.querySelector('.scroll');
+    if(newScroll) newScroll.scrollTop = scrollTop;
+  });
+}
+
+function render(){
+  const app=document.getElementById('app');app.innerHTML='';
+  const screens={landing:scrLanding,library:scrLibrary,pick:scrPick,briefing:scrBriefing,chamber:scrChamber,results:scrResults};
+  app.appendChild((screens[S.phase]||scrLanding)());
+  if(S.techMode)updateTP();
+}
+
+// Bootstrap
+document.getElementById('tech-overlay').addEventListener('click',closeTP);
+document.getElementById('tp-close').addEventListener('click',closeTP);
+document.getElementById('audio-btn').addEventListener('click',()=>{audioOn=!audioOn;document.getElementById('audio-btn').textContent=audioOn?'🔊':'🔇';});
+render();
+</script></body></html>
